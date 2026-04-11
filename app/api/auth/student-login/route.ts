@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, classrooms, groups } from '@/db';
 import { eq, and } from 'drizzle-orm';
 import { signJWT, setCookieToken } from '@/lib/auth';
+import { isMissingTableError } from '@/lib/db-errors';
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,6 +44,12 @@ export async function POST(req: NextRequest) {
     return res;
   } catch (err) {
     console.error(err);
+    if (isMissingTableError(err)) {
+      return NextResponse.json(
+        { error: 'Datu-basea ez dago hasieratuta. Exekutatu db:push lehenengo.' },
+        { status: 503 }
+      );
+    }
     return NextResponse.json({ error: 'Zerbitzari errorea' }, { status: 500 });
   }
 }

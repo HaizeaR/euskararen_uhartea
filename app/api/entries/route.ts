@@ -63,12 +63,6 @@ export async function POST(req: NextRequest) {
     const [group] = await db.select().from(groups).where(eq(groups.id, session.groupId)).limit(1);
     if (group) {
       const currentPos = parseFloat(String(group.position));
-      const mapTotal = await db
-        .select()
-        .from(groups)
-        .where(eq(groups.id, session.groupId))
-        .limit(1);
-
       // Get classroom to get map_total
       const { classrooms } = await import('@/db');
       const [classroom] = await db

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, classrooms, groups } from '@/db';
 import { eq, and } from 'drizzle-orm';
+import { isMissingTableError } from '@/lib/db-errors';
 
 export async function GET(
   _req: NextRequest,
@@ -27,6 +28,12 @@ export async function GET(
     return NextResponse.json({ classroom, groups: groupList });
   } catch (err) {
     console.error(err);
+    if (isMissingTableError(err)) {
+      return NextResponse.json(
+        { error: 'Datu-basea ez dago hasieratuta. Exekutatu db:push lehenengo.' },
+        { status: 503 }
+      );
+    }
     return NextResponse.json({ error: 'Zerbitzari errorea' }, { status: 500 });
   }
 }

@@ -26,7 +26,7 @@ export default function IrakasleaDashboard() {
       try {
         const sessionRes = await fetch('/api/session');
         if (!sessionRes.ok) return;
-        const session = await sessionRes.json();
+        await sessionRes.json();
 
         // Get classroom info to find classroomId
         // Teacher session has userId but not classroomId, so we need to find it

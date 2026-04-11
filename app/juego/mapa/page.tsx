@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import MapAssetsFallback from '@/components/MapAssetsFallback';
 
 const MapCanvas = dynamic(() => import('@/components/MapCanvas'), { ssr: false });
 
@@ -64,6 +65,7 @@ export default function MapaPage() {
       </header>
 
       <MapCanvas groups={groups} mapTotal={50} highlightGroupId={myGroupId ?? undefined} />
+      <MapAssetsFallback />
 
       {/* Legend */}
       <div className="card-dark p-4 mt-4">
