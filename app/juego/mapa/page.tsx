@@ -85,6 +85,7 @@ export default function MapaPage() {
                 ref={videoRef}
                 src="/intro.mp4"
                 autoPlay
+                muted
                 playsInline
                 controls
                 onEnded={closeIntro}

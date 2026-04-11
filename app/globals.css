@@ -2,36 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── CSS variables ── earthy pastel island palette ──────────────── */
+/* ── CSS variables ── beach palette ──────────────────────────────── */
+/* Sugar Cookie #EDD5C0 · Pool Water #B3D9E0 · Breeze #92ADA4      */
+/* Butter #F2D6A1       · Tuscan Sun #F1A805 · Saddle #84572F      */
 :root {
-  --sand-light:    #f2dfa0;
-  --sand-mid:      #c8a05a;
-  --sand-deep:     #8a5e28;
-  --jungle-light:  #7dc47a;
-  --jungle-mid:    #3d8c50;
-  --jungle-deep:   #1e4e2c;
-  --teal-light:    #8ee4d8;
-  --teal-mid:      #3ab8a8;
-  --teal-deep:     #1a6860;
-  --terracotta:    #c8703a;
-  --parchment:     #f5e8c0;
-  --parchment-warm:#e8d498;
-  --ink:           #2a1a05;
-  --gold:          #e8b830;
-  --gold-dark:     #b88010;
+  /* Sand / parchment tones */
+  --sugar-cookie:  #EDD5C0;
+  --butter:        #F2D6A1;
+  --tuscan-sun:    #F1A805;
+  --saddle:        #84572F;
+
+  /* Water / teal tones */
+  --pool-water:    #B3D9E0;
+  --breeze:        #92ADA4;
+
+  /* Semantic aliases used throughout the app */
+  --sand-light:    #F2D6A1;   /* Butter  */
+  --sand-mid:      #F1A805;   /* Tuscan Sun */
+  --sand-deep:     #84572F;   /* Saddle */
+  --teal-light:    #B3D9E0;   /* Pool Water */
+  --teal-mid:      #92ADA4;   /* Breeze */
+  --teal-deep:     #5a8078;   /* darker Breeze */
+  --parchment:     #EDD5C0;   /* Sugar Cookie */
+  --parchment-warm:#F2D6A1;   /* Butter */
+  --ink:           #3d2510;   /* deep Saddle */
+  --gold:          #F1A805;   /* Tuscan Sun */
+  --gold-dark:     #b87d04;   /* darker Tuscan Sun */
 }
 
 /* ── Base ─────────────────────────────────────────────────────────── */
 * { box-sizing: border-box; }
 
 body {
-  /* Soft sandy-earthy background — lighter, more pastel */
-  background-color: #d8b878;
+  /* Beach palette background — Sugar Cookie base with Pool Water + Butter accents */
+  background-color: #EDD5C0;
   background-image:
-    radial-gradient(ellipse 90% 50% at 50% -5%,  rgba(255, 235, 160, 0.60) 0%, transparent 60%),
-    radial-gradient(ellipse 65% 60% at  2% 98%,  rgba(50,  115,  65, 0.35) 0%, transparent 55%),
-    radial-gradient(ellipse 55% 50% at 100% 95%, rgba(30,  160, 145, 0.30) 0%, transparent 55%),
-    linear-gradient(180deg, #e8c878 0%, #d4a858 45%, #c49848 100%);
+    radial-gradient(ellipse 90% 50% at 50% -5%,  rgba(242, 214, 161, 0.70) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 60% at  2% 98%,  rgba(179, 217, 224, 0.40) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 50% at 100% 95%, rgba(146, 173, 164, 0.30) 0%, transparent 55%),
+    linear-gradient(180deg, #F2D6A1 0%, #EDD5C0 45%, #dfc4a8 100%);
   color: var(--ink);
   font-family: 'Nunito', var(--font-body), system-ui, sans-serif;
   font-weight: 400;
@@ -52,105 +61,108 @@ h1, h2, h3 {
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1.1;
-  color: var(--sand-light);
+  color: #EDD5C0;                   /* Sugar Cookie */
   text-shadow:
-    3px 3px 0px rgba(74, 38, 10, 0.90),
-    -1px -1px 0px rgba(74, 38, 10, 0.55),
-     0px  0px 16px rgba(240, 185, 50, 0.45),
-     0px  0px 40px rgba(240, 185, 50, 0.18);
-  -webkit-text-stroke: 1.5px rgba(74, 38, 10, 0.55);
+    3px 3px 0px rgba(61, 37, 16, 0.88),
+    -1px -1px 0px rgba(61, 37, 16, 0.50),
+     0px  0px 16px rgba(241, 168, 5, 0.50),   /* Tuscan Sun glow */
+     0px  0px 40px rgba(241, 168, 5, 0.20);
+  -webkit-text-stroke: 1.5px rgba(61, 37, 16, 0.50);
   paint-order: stroke fill;
   text-transform: none;
 }
 
 /* ── BUTTONS ─────────────────────────────────────────────────────── */
 
+/* btn-gold → Tuscan Sun #F1A805 */
 .btn-gold {
   @apply py-3 px-6 rounded-2xl border-2 shadow-lg active:scale-95 transition-all cursor-pointer;
   font-family: 'Nunito', var(--font-body), sans-serif;
   font-weight: 800;
   letter-spacing: 0.02em;
-  background: linear-gradient(145deg, #f0d068, #c88820);
-  color: #2a1a05;
-  border-color: #9a6210;
-  box-shadow: 0 4px 14px rgba(200,140,20,0.45), 0 2px 6px rgba(74,38,10,0.45);
+  background: linear-gradient(145deg, #f5c030, #d49004);
+  color: #3d2510;
+  border-color: #b87d04;
+  box-shadow: 0 4px 14px rgba(241,168,5,0.45), 0 2px 6px rgba(61,37,16,0.40);
 }
 .btn-gold:hover:not(:disabled) {
-  background: linear-gradient(145deg, #f8dc78, #e09828);
-  box-shadow: 0 6px 22px rgba(220,180,40,0.55);
+  background: linear-gradient(145deg, #f8cf50, #e0a010);
+  box-shadow: 0 6px 22px rgba(241,168,5,0.55);
   transform: translateY(-2px);
 }
 .btn-gold:disabled { opacity: 0.45; cursor: not-allowed; }
 
+/* btn-teal → Pool Water #B3D9E0 / Breeze #92ADA4 */
 .btn-teal {
   @apply py-3 px-6 rounded-2xl border-2 shadow-lg active:scale-95 transition-all cursor-pointer;
   font-family: 'Nunito', var(--font-body), sans-serif;
   font-weight: 800;
   letter-spacing: 0.02em;
-  background: linear-gradient(145deg, #60d8a8, #1e8858);
-  color: #fff;
-  border-color: #0e5038;
-  box-shadow: 0 4px 14px rgba(30,155,110,0.45), 0 2px 6px rgba(14,45,35,0.45);
+  background: linear-gradient(145deg, #c8e8ee, #6e9e98);
+  color: #3d2510;
+  border-color: #5a8078;
+  box-shadow: 0 4px 14px rgba(146,173,164,0.50), 0 2px 6px rgba(61,37,16,0.30);
 }
 .btn-teal:hover:not(:disabled) {
-  background: linear-gradient(145deg, #70e8b8, #28a868);
-  box-shadow: 0 6px 22px rgba(40,170,130,0.55);
+  background: linear-gradient(145deg, #d4eff4, #82b2aa);
+  box-shadow: 0 6px 22px rgba(179,217,224,0.60);
   transform: translateY(-2px);
 }
 .btn-teal:disabled { opacity: 0.45; cursor: not-allowed; }
 
+/* btn-bronze → Saddle #84572F */
 .btn-bronze {
   @apply py-3 px-6 rounded-2xl border-2 shadow-lg active:scale-95 transition-all cursor-pointer;
   font-family: 'Nunito', var(--font-body), sans-serif;
   font-weight: 800;
   letter-spacing: 0.02em;
-  background: linear-gradient(145deg, #d48848, #8a4820);
-  color: var(--parchment);
-  border-color: #5a2e0c;
-  box-shadow: 0 4px 14px rgba(140,80,25,0.45), 0 2px 6px rgba(60,30,10,0.45);
+  background: linear-gradient(145deg, #a06840, #5e3818);
+  color: #EDD5C0;
+  border-color: #3d2510;
+  box-shadow: 0 4px 14px rgba(132,87,47,0.50), 0 2px 6px rgba(61,37,16,0.40);
 }
 .btn-bronze:hover:not(:disabled) {
-  background: linear-gradient(145deg, #e49858, #b06030);
-  box-shadow: 0 6px 22px rgba(180,100,40,0.55);
+  background: linear-gradient(145deg, #b87848, #7a4a22);
+  box-shadow: 0 6px 22px rgba(132,87,47,0.60);
   transform: translateY(-2px);
 }
 .btn-bronze:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* ── CARDS ────────────────────────────────────────────────────────── */
 
-/* Parchment card — warm aged paper */
+/* Parchment card — Sugar Cookie warm paper */
 .card-parchment {
-  background: linear-gradient(145deg, #f8ecd0, #ead8a0, #f2e4b8);
+  background: linear-gradient(145deg, #F5E4D0, #EDD5C0, #F2D6A1);
   color: var(--ink);
-  border: 3px solid var(--sand-deep);
+  border: 3px solid #84572F;
   border-radius: 1.25rem;
   box-shadow:
-    0 6px 24px rgba(60,30,10,0.40),
-    0 2px 8px rgba(160,100,20,0.25),
-    inset 0 1px 0 rgba(255,248,210,0.65);
+    0 6px 24px rgba(132,87,47,0.30),
+    0 2px 8px rgba(241,168,5,0.20),
+    inset 0 1px 0 rgba(242,214,161,0.60);
 }
 
-/* Dark card — deep jungle/night, parchment tones */
+/* Dark card — deep Saddle, Pool Water border */
 .card-dark {
-  background: linear-gradient(145deg, rgba(28, 18, 8, 0.92), rgba(16, 40, 18, 0.92));
-  border: 2px solid rgba(100, 170, 90, 0.28);
+  background: linear-gradient(145deg, rgba(42, 26, 12, 0.94), rgba(28, 48, 44, 0.94));
+  border: 2px solid rgba(146, 173, 164, 0.30);
   border-radius: 1.25rem;
   box-shadow:
-    0 4px 20px rgba(15,8,3,0.60),
-    inset 0 1px 0 rgba(240,195,55,0.07);
+    0 4px 20px rgba(42,26,12,0.55),
+    inset 0 1px 0 rgba(241,168,5,0.08);
   backdrop-filter: blur(4px);
-  color: var(--parchment);
+  color: #EDD5C0;
 }
 
-/* Wood card */
+/* Wood card — Saddle tones */
 .card-wood {
-  background: linear-gradient(145deg, #c08038, #8a5830, #784820);
-  border: 3px solid #4a2a10;
+  background: linear-gradient(145deg, #a06840, #84572F, #6a3e1c);
+  border: 3px solid #3d2510;
   border-radius: 0.85rem;
   box-shadow:
-    0 4px 16px rgba(25,8,3,0.55),
-    inset 0 1px 0 rgba(255,220,140,0.22),
-    inset 0 -1px 0 rgba(0,0,0,0.30);
+    0 4px 16px rgba(42,26,12,0.50),
+    inset 0 1px 0 rgba(242,214,161,0.20),
+    inset 0 -1px 0 rgba(0,0,0,0.25);
 }
 
 /* ── NAV LINK ─────────────────────────────────────────────────────── */
@@ -158,11 +170,11 @@ h1, h2, h3 {
   @apply px-4 py-2 rounded-xl transition-colors;
   font-family: 'Nunito', var(--font-body), sans-serif;
   font-weight: 700;
-  color: var(--parchment);
+  color: #EDD5C0;  /* Sugar Cookie */
 }
 .nav-link:hover {
-  background-color: rgba(240,195,55,0.16);
-  color: var(--sand-light);
+  background-color: rgba(241,168,5,0.18);   /* Tuscan Sun tint */
+  color: #F2D6A1;  /* Butter */
 }
 
 /* ── UTILITIES ────────────────────────────────────────────────────── */
