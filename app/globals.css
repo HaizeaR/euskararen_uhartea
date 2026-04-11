@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #1a0e05;
+  --color-gold: #f0c040;
+  --color-bronze: #c87830;
+  --color-teal: #20b090;
+  --color-parchment: #f5e8c0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-parchment);
+  font-family: 'Cinzel', serif;
+  min-height: 100vh;
+}
+
+h1, h2, h3 {
+  font-family: 'Cinzel Decorative', cursive;
+}
+
+.btn-gold {
+  @apply bg-amber-400 text-amber-900 font-bold py-3 px-6 rounded-xl border-2 border-amber-600 shadow-lg hover:bg-amber-300 active:scale-95 transition-all cursor-pointer;
+  font-family: 'Cinzel', serif;
+}
+
+.btn-teal {
+  @apply bg-teal-500 text-white font-bold py-3 px-6 rounded-xl border-2 border-teal-700 shadow-lg hover:bg-teal-400 active:scale-95 transition-all cursor-pointer;
+  font-family: 'Cinzel', serif;
+}
+
+.btn-bronze {
+  @apply bg-amber-700 text-amber-100 font-bold py-3 px-6 rounded-xl border-2 border-amber-900 shadow-lg hover:bg-amber-600 active:scale-95 transition-all cursor-pointer;
+  font-family: 'Cinzel', serif;
+}
+
+.card-parchment {
+  background-color: var(--color-parchment);
+  color: #3a2010;
+  border: 3px solid var(--color-bronze);
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.card-dark {
+  background-color: #2a1a08;
+  border: 2px solid var(--color-bronze);
+  border-radius: 1rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.island-title {
+  font-family: 'Cinzel Decorative', cursive;
+  color: var(--color-gold);
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(240,192,64,0.3);
+}
+
+.nav-link {
+  @apply px-4 py-2 rounded-lg font-semibold transition-colors;
+  font-family: 'Cinzel', serif;
+  color: var(--color-parchment);
+}
+
+.nav-link:hover {
+  background-color: rgba(240,192,64,0.2);
+  color: var(--color-gold);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
