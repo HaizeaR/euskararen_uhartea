@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -19,9 +19,11 @@ type Group = {
 };
 
 export default function MapaPage() {
-  const router = useRouter();
-  const [myGroup,  setMyGroup]  = useState<Group | null>(null);
-  const [loading,  setLoading]  = useState(true);
+  const router   = useRouter();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [myGroup,    setMyGroup]    = useState<Group | null>(null);
+  const [loading,    setLoading]    = useState(true);
+  const [showIntro,  setShowIntro]  = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -56,8 +58,54 @@ export default function MapaPage() {
   const nextCheckpoint = CHECKPOINTS.find(c => c.requiredPos > pos);
   const lastCheckpoint = [...CHECKPOINTS].reverse().find(c => c.requiredPos <= pos);
 
+  function closeIntro() {
+    if (videoRef.current) videoRef.current.pause();
+    setShowIntro(false);
+  }
+
   return (
     <main className="min-h-screen p-4 md:p-6">
+
+      {/* ── VIDEO INTRO OVERLAY ── */}
+      {showIntro && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(15, 8, 3, 0.92)', backdropFilter: 'blur(6px)' }}
+        >
+          <div className="relative w-full max-w-2xl mx-4">
+            {/* Title */}
+            <h2 className="island-title text-2xl text-center mb-4">
+              Uharteko Abentura
+            </h2>
+
+            {/* Video */}
+            <div className="rounded-2xl overflow-hidden shadow-2xl"
+              style={{ border: '3px solid rgba(200,160,50,0.55)' }}>
+              <video
+                ref={videoRef}
+                src="/intro.mp4"
+                autoPlay
+                playsInline
+                controls
+                onEnded={closeIntro}
+                className="w-full"
+                style={{ display: 'block', maxHeight: '60vh' }}
+              />
+            </div>
+
+            {/* Skip button */}
+            <div className="flex justify-center mt-5">
+              <button
+                onClick={closeIntro}
+                className="btn-bronze px-8 py-3 text-base"
+              >
+                Mapara joan →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="flex items-center gap-4 mb-4">
         <Link href="/juego" className="text-2xl" style={{ color: 'var(--sand-light)' }}>←</Link>
         <h1 className="island-title text-2xl">Uharteko Mapa</h1>
