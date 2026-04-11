@@ -79,6 +79,11 @@ export async function POST(req: NextRequest) {
         .update(groups)
         .set({ position: String(newPos) })
         .where(eq(groups.id, session.groupId));
+
+      return NextResponse.json(
+        { ...entry, previousPosition: currentPos, newPosition: newPos },
+        { status: 201 }
+      );
     }
 
     return NextResponse.json(entry, { status: 201 });

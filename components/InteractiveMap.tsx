@@ -289,12 +289,13 @@ export default function InteractiveMap({ groups, highlightGroupId }: Props) {
               key={g.id}
               className="absolute pointer-events-none"
               style={{
-                left:      `${pos.x * 100}%`,
-                top:       `${pos.y * 100}%`,
-                transform: 'translate(-50%, -100%)',
-                width: sz, height: sz,
-                filter: `drop-shadow(0 3px 8px ${g.color}) drop-shadow(0 1px 3px rgba(0,0,0,0.7))`,
-                zIndex: hi ? 20 : 10,
+                left:       `${pos.x * 100}%`,
+                top:        `${pos.y * 100}%`,
+                transform:  'translate(-50%, -100%)',
+                width: sz,  height: sz,
+                filter:     `drop-shadow(0 2px 6px ${g.color}aa) drop-shadow(0 1px 2px rgba(0,0,0,0.5))`,
+                zIndex:     hi ? 20 : 10,
+                transition: 'left 1.2s cubic-bezier(0.4,0,0.2,1), top 1.2s cubic-bezier(0.4,0,0.2,1)',
               }}
             >
               {/* Color circle behind */}

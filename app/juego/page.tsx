@@ -175,10 +175,10 @@ export default function JuegoPage() {
         <Link href="/juego/mapa" className="btn-bronze text-center">
           🗺️ Mapa ikusi
         </Link>
-        <button
-          onClick={handleLogout}
-          className="btn-bronze text-center"
-        >
+        <Link href="/juego/perfil" className="btn-bronze text-center">
+          🎒 Nire Profila
+        </Link>
+        <button onClick={handleLogout} className="btn-bronze text-center col-span-2 opacity-60 hover:opacity-100 py-2 text-sm">
           🚪 Irten
         </button>
       </div>

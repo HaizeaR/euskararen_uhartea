@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CHARACTERS } from '@/lib/characters';
+import { CHECKPOINTS, type Checkpoint } from '@/lib/checkpoints';
 
-type ClassData = { euskera: boolean; errespetua: boolean; };
+type ClassData = { euskera: boolean; errespetua: boolean };
 
 const CLASS_NAMES = [
   'Matematika',
@@ -16,21 +17,108 @@ const CLASS_NAMES = [
   'Gorputz Hezkuntza',
 ];
 
+function batteryColor(score: number) {
+  if (score >= 8) return '#27ae60';
+  if (score >= 5) return '#F1A805';
+  if (score >= 2) return '#e07830';
+  return '#c03020';
+}
+
+/* ── Checkpoint celebration overlay ─────────────────────────── */
+function CheckpointCelebration({
+  checkpoint,
+  onClose,
+}: {
+  checkpoint: Checkpoint;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(20,10,4,0.82)', backdropFilter: 'blur(8px)' }}
+    >
+      {/* Confetti dots */}
+      {[...Array(18)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full animate-ping"
+          style={{
+            width:  6 + (i % 4) * 3,
+            height: 6 + (i % 4) * 3,
+            left:   `${8 + (i * 5.2) % 84}%`,
+            top:    `${5 + (i * 7.1) % 40}%`,
+            background: ['#F1A805','#B3D9E0','#EDD5C0','#92ADA4','#84572F'][i % 5],
+            animationDelay: `${(i * 0.12).toFixed(2)}s`,
+            animationDuration: `${0.9 + (i % 3) * 0.3}s`,
+            opacity: 0.7,
+          }}
+        />
+      ))}
+
+      <div
+        className="relative rounded-3xl p-8 max-w-xs w-full text-center shadow-2xl"
+        style={{
+          background: 'linear-gradient(160deg,#faf3e8,#EDD5C0)',
+          border: '1px solid rgba(132,87,47,0.25)',
+        }}
+      >
+        {/* Big icon */}
+        <div className="text-7xl mb-3 animate-bounce">{checkpoint.icon}</div>
+
+        <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: '#92ADA4' }}>
+          Leku berria desblokeatu duzu!
+        </p>
+        <h2
+          className="text-2xl font-black mb-2 leading-tight"
+          style={{ fontFamily: 'Rubik, var(--font-display), sans-serif', color: '#3d2510' }}
+        >
+          {checkpoint.name}
+        </h2>
+        <p className="text-sm leading-relaxed mb-5" style={{ color: '#6a4020' }}>
+          {checkpoint.description}
+        </p>
+
+        {/* Reward badge */}
+        <div
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-black mb-6"
+          style={{ background: 'rgba(241,168,5,0.15)', border: '1px solid rgba(241,168,5,0.40)', color: '#7a5000' }}
+        >
+          <span className="text-xl">{checkpoint.reward}</span>
+          Saria lortu duzu!
+        </div>
+
+        <button
+          onClick={onClose}
+          className="btn-bronze w-full text-base py-3"
+        >
+          Aurrera! →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Page ─────────────────────────────────────────────────────── */
 export default function RegistroPage() {
   const router = useRouter();
-  const [classes,  setClasses]  = useState<ClassData[]>(Array(5).fill(null).map(() => ({ euskera: false, errespetua: false })));
-  const [charIdx,  setCharIdx]  = useState(0);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState('');
+  const [classes,     setClasses]     = useState<ClassData[]>(Array(5).fill(null).map(() => ({ euskera: false, errespetua: false })));
+  const [charIdx,     setCharIdx]     = useState(0);
+  const [currentPos,  setCurrentPos]  = useState(0);
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState('');
+  const [celebration, setCelebration] = useState<Checkpoint | null>(null);
 
   useEffect(() => {
     fetch('/api/session').then(r => r.json()).then(s => {
       if (s.groupId) {
         fetch(`/api/groups?classroom_id=${s.classroomId}`)
           .then(r => r.json())
-          .then((gs: { id: number; character_index: number }[]) => {
+          .then((gs: { id: number; character_index: number; position: string }[]) => {
             const g = gs.find(x => x.id === s.groupId);
-            if (g) setCharIdx(g.character_index);
+            if (g) {
+              setCharIdx(g.character_index);
+              setCurrentPos(parseFloat(g.position));
+            }
           });
       }
     });
@@ -43,21 +131,16 @@ export default function RegistroPage() {
   const totalScore = classes.reduce((s, c) => s + (c.euskera ? 1 : 0) + (c.errespetua ? 1 : 0), 0);
   const advance    = totalScore / 2;
   const pct        = (totalScore / 10) * 100;
+  const bColor     = batteryColor(totalScore);
   const char       = CHARACTERS[charIdx] ?? CHARACTERS[0];
-
-  // Battery color zones
-  const batteryColor =
-    totalScore >= 8 ? '#27ae60' :
-    totalScore >= 5 ? '#f5c842' :
-    totalScore >= 2 ? '#e67e22' : '#c0392b';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(''); setLoading(true);
     const body: Record<string, boolean> = {};
     classes.forEach((c, i) => {
-      body[`class_${i + 1}_euskera`]     = c.euskera;
-      body[`class_${i + 1}_errespetua`]  = c.errespetua;
+      body[`class_${i + 1}_euskera`]    = c.euskera;
+      body[`class_${i + 1}_errespetua`] = c.errespetua;
     });
     try {
       const res = await fetch('/api/entries', {
@@ -65,139 +148,153 @@ export default function RegistroPage() {
         body: JSON.stringify(body),
       });
       if (!res.ok) { setError((await res.json()).error || 'Errorea'); return; }
-      router.push('/juego');
+
+      const data = await res.json();
+      const prevPos = data.previousPosition ?? currentPos;
+      const newPos  = data.newPosition  ?? (currentPos + advance);
+
+      // Find first newly unlocked checkpoint
+      const unlocked = CHECKPOINTS.find(
+        cp => cp.requiredPos > 0 && cp.requiredPos > prevPos && cp.requiredPos <= newPos
+      );
+      if (unlocked) {
+        setCelebration(unlocked);
+      } else {
+        router.push('/juego');
+      }
     } catch { setError('Konexio errorea'); }
     finally  { setLoading(false); }
   }
 
   return (
-    <main className="min-h-screen p-4 md:p-6 max-w-lg mx-auto">
-      <header className="flex items-center gap-3 mb-6">
-        <Link href="/juego" className="text-2xl" style={{ color: 'var(--sand-light)' }}>←</Link>
-        <h1 className="island-title text-2xl">Gaur Erregistratu</h1>
-      </header>
+    <>
+      {celebration && (
+        <CheckpointCelebration
+          checkpoint={celebration}
+          onClose={() => { setCelebration(null); router.push('/juego'); }}
+        />
+      )}
 
-      {/* ── CHARACTER + BATTERY ── */}
-      <div
-        className="rounded-2xl p-5 mb-6 flex items-center gap-5"
-        style={{ background: `linear-gradient(135deg, ${char.color}33, ${char.color}11)`, border: `2px solid ${char.color}55` }}
-      >
-        {/* Character — grows with score */}
+      <main className="min-h-screen p-4 md:p-6 max-w-lg mx-auto">
+        <header className="flex items-center gap-3 mb-5">
+          <Link href="/juego" className="text-xl opacity-60 hover:opacity-100" style={{ color: 'var(--saddle)' }}>←</Link>
+          <h1 className="island-title text-xl">Gaur Erregistratu</h1>
+        </header>
+
+        {/* ── CHARACTER + BATTERY ── */}
         <div
-          className="relative flex-shrink-0 transition-all duration-500"
+          className="rounded-2xl p-4 mb-5 flex items-center gap-4"
           style={{
-            width:  `${80 + totalScore * 6}px`,
-            height: `${80 + totalScore * 6}px`,
-            filter: totalScore >= 8
-              ? `drop-shadow(0 0 14px ${char.color})`
-              : totalScore >= 5
-              ? `drop-shadow(0 0 6px ${char.color}88)`
-              : 'none',
+            background: `linear-gradient(135deg, ${char.color}22, ${char.color}0a)`,
+            border: `1px solid ${char.color}33`,
           }}
         >
-          <Image src={char.image} alt={char.name} fill className="object-contain" />
-          {totalScore === 10 && (
-            <div className="absolute -top-2 -right-2 text-2xl animate-bounce">⭐</div>
-          )}
-        </div>
-
-        {/* Battery bar */}
-        <div className="flex-1">
-          <div className="flex justify-between items-center mb-1.5">
-            <span className="font-bold text-sm" style={{ color: 'var(--parchment)' }}>
-              Energia
-            </span>
-            <span className="font-black text-xl" style={{ color: batteryColor }}>
-              {totalScore}/10
-            </span>
+          <div
+            className="relative flex-shrink-0 transition-all duration-500"
+            style={{
+              width:  `${72 + totalScore * 5}px`,
+              height: `${72 + totalScore * 5}px`,
+              filter: totalScore >= 8
+                ? `drop-shadow(0 0 12px ${char.color}bb)`
+                : totalScore >= 5
+                ? `drop-shadow(0 0 5px ${char.color}66)`
+                : 'none',
+            }}
+          >
+            <Image src={char.image} alt={char.name} fill className="object-contain" />
+            {totalScore === 10 && (
+              <div className="absolute -top-2 -right-2 text-xl animate-bounce">⭐</div>
+            )}
           </div>
 
-          {/* Main battery */}
-          <div className="relative rounded-lg overflow-hidden h-8 w-full"
-            style={{ background: 'rgba(0,0,0,0.35)', border: '2px solid rgba(200,160,60,0.4)' }}>
-            <div
-              className="h-full rounded-md transition-all duration-300"
-              style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${batteryColor}99, ${batteryColor})` }}
-            />
-            {/* Battery segments */}
-            {[2,4,6,8].map(n => (
-              <div key={n} className="absolute top-0 bottom-0 w-px opacity-30"
-                style={{ left: `${n * 10}%`, background: 'rgba(255,255,255,0.6)' }} />
-            ))}
-            <span className="absolute inset-0 flex items-center justify-center text-xs font-black"
-              style={{ color: totalScore > 4 ? '#fff' : 'rgba(255,255,255,0.5)', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
-              +{advance} posizio
-            </span>
-          </div>
-
-          {/* Segment dots */}
-          <div className="flex gap-1 mt-2">
-            {Array.from({ length: 10 }).map((_, j) => (
-              <div key={j} className="flex-1 h-2 rounded-full transition-all duration-200"
-                style={{ background: j < totalScore ? batteryColor : 'rgba(255,255,255,0.15)' }} />
-            ))}
-          </div>
-
-          <p className="text-xs mt-1.5 opacity-60" style={{ color: 'var(--parchment)' }}>
-            {totalScore === 10 ? '🎉 Perfektua! Energia osoa!' :
-             totalScore >= 7  ? '💪 Oso ondo!' :
-             totalScore >= 4  ? '👍 Aurrera!' : '🌱 Hasi berri!'}
-          </p>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-3">
-        {CLASS_NAMES.map((name, i) => (
-          <div key={i} className="card-dark p-4 rounded-xl">
-            <p className="font-bold text-sm uppercase tracking-wide mb-3" style={{ color: 'var(--sand-mid)' }}>
-              {i + 1}. {name}
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {/* Euskera */}
-              <button
-                type="button"
-                onClick={() => toggleClass(i, 'euskera')}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left"
-                style={{
-                  borderColor:     classes[i].euskera ? '#27ae60' : 'rgba(100,70,20,0.4)',
-                  background:      classes[i].euskera ? 'rgba(39,174,96,0.18)' : 'rgba(0,0,0,0.25)',
-                  boxShadow:       classes[i].euskera ? '0 0 10px rgba(39,174,96,0.30)' : 'none',
-                  color:           classes[i].euskera ? '#72e8a0' : 'rgba(240,210,120,0.55)',
-                }}
-              >
-                <span className="text-lg">🗣️</span>
-                <span className="text-xs font-bold leading-tight">Euskaraz aritu naiz</span>
-                {classes[i].euskera && <span className="ml-auto text-green-400 font-black">✓</span>}
-              </button>
-
-              {/* Errespetua */}
-              <button
-                type="button"
-                onClick={() => toggleClass(i, 'errespetua')}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left"
-                style={{
-                  borderColor:     classes[i].errespetua ? '#f5c842' : 'rgba(100,70,20,0.4)',
-                  background:      classes[i].errespetua ? 'rgba(245,200,66,0.18)' : 'rgba(0,0,0,0.25)',
-                  boxShadow:       classes[i].errespetua ? '0 0 10px rgba(245,200,66,0.30)' : 'none',
-                  color:           classes[i].errespetua ? '#f5d870' : 'rgba(240,210,120,0.55)',
-                }}
-              >
-                <span className="text-lg">🤝</span>
-                <span className="text-xs font-bold leading-tight">Errespetatua naiz</span>
-                {classes[i].errespetua && <span className="ml-auto text-amber-400 font-black">✓</span>}
-              </button>
+          <div className="flex-1">
+            <div className="flex justify-between items-baseline mb-1">
+              <span className="text-xs font-bold uppercase tracking-wide" style={{ color: '#92ADA4' }}>Energia</span>
+              <span className="font-black text-lg" style={{ color: bColor }}>{totalScore}/10</span>
             </div>
+
+            {/* Battery bar */}
+            <div className="relative rounded-lg overflow-hidden h-7"
+              style={{ background: 'rgba(0,0,0,0.22)', border: '1px solid rgba(200,160,60,0.25)' }}>
+              <div
+                className="h-full transition-all duration-300"
+                style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${bColor}88, ${bColor})` }}
+              />
+              {[2,4,6,8].map(n => (
+                <div key={n} className="absolute top-0 bottom-0 w-px"
+                  style={{ left: `${n * 10}%`, background: 'rgba(255,255,255,0.18)' }} />
+              ))}
+              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold"
+                style={{ color: totalScore > 3 ? '#fff' : 'rgba(255,255,255,0.4)', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
+                +{advance} pos.
+              </span>
+            </div>
+
+            {/* Segment dots */}
+            <div className="flex gap-0.5 mt-1.5">
+              {Array.from({ length: 10 }).map((_, j) => (
+                <div key={j} className="flex-1 h-1.5 rounded-full transition-all duration-200"
+                  style={{ background: j < totalScore ? bColor : 'rgba(255,255,255,0.12)' }} />
+              ))}
+            </div>
+
+            <p className="text-xs mt-1 opacity-55" style={{ color: 'var(--parchment)' }}>
+              {totalScore === 10 ? '🎉 Perfektua!' : totalScore >= 7 ? '💪 Oso ondo!' : totalScore >= 4 ? '👍 Aurrera!' : '🌱 Hasi berri!'}
+            </p>
           </div>
-        ))}
+        </div>
 
-        {error && (
-          <p className="text-red-400 text-center text-sm bg-red-950 bg-opacity-50 p-3 rounded-xl">{error}</p>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-2.5">
+          {CLASS_NAMES.map((name, i) => (
+            <div key={i} className="card-dark px-4 py-3 rounded-2xl">
+              <p className="text-xs font-bold uppercase tracking-widest mb-2.5" style={{ color: '#92ADA4' }}>
+                {i + 1}. {name}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => toggleClass(i, 'euskera')}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl border transition-all text-left"
+                  style={{
+                    borderColor: classes[i].euskera ? 'rgba(100,185,140,0.60)' : 'rgba(146,173,164,0.18)',
+                    background:  classes[i].euskera ? 'rgba(100,185,140,0.12)' : 'rgba(0,0,0,0.15)',
+                    color:       classes[i].euskera ? '#7edaaa' : 'rgba(237,213,192,0.45)',
+                  }}
+                >
+                  <span className="text-base">🗣️</span>
+                  <span className="text-xs font-semibold leading-tight flex-1">Euskaraz aritu naiz</span>
+                  {classes[i].euskera && <span style={{ color: '#7edaaa', fontSize: 11 }}>✓</span>}
+                </button>
 
-        <button type="submit" disabled={loading} className="btn-teal w-full text-base py-4 mt-2">
-          {loading ? 'Gordetzen...' : '✅ Gorde eta aurrera!'}
-        </button>
-      </form>
-    </main>
+                <button
+                  type="button"
+                  onClick={() => toggleClass(i, 'errespetua')}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl border transition-all text-left"
+                  style={{
+                    borderColor: classes[i].errespetua ? 'rgba(241,168,5,0.50)' : 'rgba(146,173,164,0.18)',
+                    background:  classes[i].errespetua ? 'rgba(241,168,5,0.10)' : 'rgba(0,0,0,0.15)',
+                    color:       classes[i].errespetua ? '#f5cc50' : 'rgba(237,213,192,0.45)',
+                  }}
+                >
+                  <span className="text-base">🤝</span>
+                  <span className="text-xs font-semibold leading-tight flex-1">Errespetatua naiz</span>
+                  {classes[i].errespetua && <span style={{ color: '#f5cc50', fontSize: 11 }}>✓</span>}
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {error && (
+            <p className="text-sm text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(180,40,20,0.12)', color: '#e05040', border: '1px solid rgba(180,40,20,0.20)' }}>
+              {error}
+            </p>
+          )}
+
+          <button type="submit" disabled={loading} className="btn-teal w-full text-base py-3.5 mt-1">
+            {loading ? 'Gordetzen...' : '✅ Gorde eta aurrera!'}
+          </button>
+        </form>
+      </main>
+    </>
   );
 }
