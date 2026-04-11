@@ -25,7 +25,7 @@ export default function IrakasleaLayout({ children }: { children: React.ReactNod
       {/* Top nav */}
       <nav className="sticky top-0 z-10 border-b border-wood-dark" style={{ background: 'linear-gradient(90deg,rgba(30,18,8,0.97),rgba(18,45,20,0.97))', backdropFilter: 'blur(6px)' }}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
-          <h1 className="island-title text-lg whitespace-nowrap">Euskararen Uhartea</h1>
+          <h1 className="island-title island-title-nav text-lg whitespace-nowrap">Euskararen Uhartea</h1>
           <div className="flex items-center gap-1 flex-wrap">
             {NAV_ITEMS.map((item) => {
               const isActive = item.exact

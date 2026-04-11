@@ -200,8 +200,8 @@ export default function GruposPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="island-title text-2xl text-amber-400">Taldeak Kudeatu</h2>
-          <p className="text-amber-600 text-sm mt-1">{groups.length} talde • {today}</p>
+          <h2 className="island-title text-2xl">Taldeak Kudeatu</h2>
+          <p className="text-sm mt-1 font-semibold" style={{ color: '#4a7068' }}>{groups.length} talde • {today}</p>
         </div>
         <button onClick={createGroup} disabled={creating} className="btn-teal py-2 px-5 text-sm">
           {creating ? 'Sortzen...' : '+ Talde berria'}

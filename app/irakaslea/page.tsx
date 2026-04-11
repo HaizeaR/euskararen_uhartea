@@ -97,21 +97,21 @@ export default function IrakasleaDashboard() {
 
       {/* ── MAP ── */}
       <div>
-        <h2 className="island-title text-2xl text-amber-400 mb-3">Dashboard</h2>
+        <h2 className="island-title text-2xl mb-3">Dashboard</h2>
         <MapCanvas groups={groups} mapTotal={50} />
       </div>
 
       {/* ── TODAY'S COMPLETION ── */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="island-title text-xl text-amber-400">Gaurko Egoera</h3>
-          <span className="text-amber-600 text-sm">
+          <h3 className="island-title text-xl">Gaurko Egoera</h3>
+          <span className="text-sm font-semibold" style={{ color: '#4a7068' }}>
             {registered.length}/{groups.length} taldeek erregistratu dute
           </span>
         </div>
 
         {/* Progress bar */}
-        <div className="w-full bg-amber-950 rounded-full h-2 mb-4">
+        <div className="w-full rounded-full h-2 mb-4" style={{ background: 'rgba(132,87,47,0.25)' }}>
           <div
             className="h-2 rounded-full bg-emerald-500 transition-all"
             style={{ width: groups.length ? `${(registered.length / groups.length) * 100}%` : '0%' }}
@@ -202,7 +202,7 @@ export default function IrakasleaDashboard() {
 
       {/* ── RANKING ── */}
       <div className="card-dark p-6">
-        <h3 className="island-title text-lg text-amber-400 mb-4">Sailkapena</h3>
+        <h3 className="island-title island-title-nav text-lg mb-4">Sailkapena</h3>
         <div className="space-y-2">
           {sortedGroups.map((g, i) => (
             <div key={g.id} className="flex items-center gap-3 p-2 bg-black bg-opacity-20 rounded-xl">

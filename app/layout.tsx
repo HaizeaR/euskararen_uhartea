@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { Fredoka, Nunito } from 'next/font/google';
+import { Rubik, Nunito } from 'next/font/google';
 import './globals.css';
 
-/* ── Display: Fredoka — round, friendly, easy to read for kids ── */
-const fredoka = Fredoka({
-  weight: ['400', '500', '600', '700'],
+/* ── Display: Rubik Black — bold, rounded, retro-adventure feel ── */
+const rubik = Rubik({
+  weight: ['700', '800', '900'],
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-display',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="eu" className={`${fredoka.variable} ${nunito.variable}`}>
+    <html lang="eu" className={`${rubik.variable} ${nunito.variable}`}>
       <body className="antialiased">{children}</body>
     </html>
   );
