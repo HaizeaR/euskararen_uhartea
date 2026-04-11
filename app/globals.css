@@ -1,81 +1,202 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS variables ──────────────────────────────── */
 :root {
-  --color-bg: #1a0e05;
-  --color-gold: #f0c040;
-  --color-bronze: #c87830;
-  --color-teal: #20b090;
-  --color-parchment: #f5e8c0;
+  /* Desert-island palette */
+  --sand-light:    #f0d08a;
+  --sand-mid:      #d4a85a;
+  --sand-deep:     #a07030;
+  --jungle-light:  #5aaa6a;
+  --jungle-mid:    #2d7a4f;
+  --jungle-deep:   #1a4a2e;
+  --teal-light:    #7ee8d8;
+  --teal-mid:      #2aa59e;
+  --teal-deep:     #155a60;
+  --wood-light:    #c8904a;
+  --wood-mid:      #8b5e3c;
+  --wood-dark:     #4a2e18;
+  --parchment:     #f5e8c0;
+  --parchment-warm:#e8d090;
+  --ink:           #2a1a05;
+  --gold:          #f5c842;
+  --gold-dark:     #c8960a;
 }
 
-* {
-  box-sizing: border-box;
-}
+/* ── Base ───────────────────────────────────────── */
+* { box-sizing: border-box; }
 
 body {
-  background-color: var(--color-bg);
-  color: var(--color-parchment);
-  font-family: 'Cinzel', serif;
+  /* Sandy island background — warm, sun-baked */
+  background-color: #c8924a;
+  background-image:
+    /* Sun haze top-center */
+    radial-gradient(ellipse 90% 55% at 50% -5%,  rgba(255, 220, 120, 0.55) 0%, transparent 60%),
+    /* Jungle shadow bottom-left */
+    radial-gradient(ellipse 70% 65% at  0% 100%, rgba(30, 80,  40, 0.50)  0%, transparent 55%),
+    /* Teal water shimmer bottom-right */
+    radial-gradient(ellipse 55% 50% at 100% 95%, rgba(20, 120, 110, 0.45) 0%, transparent 55%),
+    /* Sand mid-tone base */
+    linear-gradient(180deg, #e8b86a 0%, #c88040 50%, #b87030 100%);
+  color: var(--ink);
+  font-family: var(--font-body), 'Nunito', system-ui, sans-serif;
+  font-weight: 400;
   min-height: 100vh;
 }
 
+/* ── Headings: Bangers — chunky, uppercase, adventure ── */
 h1, h2, h3 {
-  font-family: 'Cinzel Decorative', cursive;
+  font-family: var(--font-display), 'Bangers', cursive;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.1;
 }
+
+/* ── ISLAND TITLE ───────────────────────────────── */
+.island-title {
+  font-family: var(--font-display), 'Bangers', cursive;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  line-height: 1;
+  color: var(--sand-light);
+  text-shadow:
+    3px 3px 0px rgba(74, 46, 24, 0.95),
+    -1px -1px 0px rgba(74, 46, 24, 0.7),
+     0px  0px 18px rgba(245, 200, 66, 0.50),
+     0px  0px 45px rgba(245, 200, 66, 0.22);
+  -webkit-text-stroke: 1.5px rgba(74, 46, 24, 0.65);
+  paint-order: stroke fill;
+}
+
+/* ── BUTTONS ────────────────────────────────────── */
 
 .btn-gold {
-  @apply bg-amber-400 text-amber-900 font-bold py-3 px-6 rounded-xl border-2 border-amber-600 shadow-lg hover:bg-amber-300 active:scale-95 transition-all cursor-pointer;
-  font-family: 'Cinzel', serif;
+  @apply py-3 px-6 rounded-xl border-2 shadow-lg active:scale-95 transition-all cursor-pointer;
+  font-family: var(--font-body), 'Nunito', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(145deg, #f8d060, #d08020);
+  color: #2a1a05;
+  border-color: #a06010;
+  box-shadow: 0 4px 14px rgba(200,140,20,0.55), 0 2px 6px rgba(74,46,24,0.55);
 }
+.btn-gold:hover:not(:disabled) {
+  background: linear-gradient(145deg, #fce070, #e89020);
+  box-shadow: 0 6px 22px rgba(245,200,66,0.65);
+  transform: translateY(-1px);
+}
+.btn-gold:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .btn-teal {
-  @apply bg-teal-500 text-white font-bold py-3 px-6 rounded-xl border-2 border-teal-700 shadow-lg hover:bg-teal-400 active:scale-95 transition-all cursor-pointer;
-  font-family: 'Cinzel', serif;
+  @apply py-3 px-6 rounded-xl border-2 shadow-lg active:scale-95 transition-all cursor-pointer;
+  font-family: var(--font-body), 'Nunito', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(145deg, #3ec898, #1a7a60);
+  color: #fff;
+  border-color: #0e4f3e;
+  box-shadow: 0 4px 14px rgba(30,160,120,0.50), 0 2px 6px rgba(14,50,40,0.55);
 }
+.btn-teal:hover:not(:disabled) {
+  background: linear-gradient(145deg, #50daa8, #26a070);
+  box-shadow: 0 6px 22px rgba(40,180,140,0.65);
+  transform: translateY(-1px);
+}
+.btn-teal:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .btn-bronze {
-  @apply bg-amber-700 text-amber-100 font-bold py-3 px-6 rounded-xl border-2 border-amber-900 shadow-lg hover:bg-amber-600 active:scale-95 transition-all cursor-pointer;
-  font-family: 'Cinzel', serif;
+  @apply py-3 px-6 rounded-xl border-2 shadow-lg active:scale-95 transition-all cursor-pointer;
+  font-family: var(--font-body), 'Nunito', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(145deg, #c87a30, #7a4018);
+  color: var(--parchment);
+  border-color: #5a2e0c;
+  box-shadow: 0 4px 14px rgba(140,80,20,0.50), 0 2px 6px rgba(74,46,24,0.55);
 }
+.btn-bronze:hover:not(:disabled) {
+  background: linear-gradient(145deg, #e09040, #a05020);
+  box-shadow: 0 6px 22px rgba(180,100,30,0.60);
+  transform: translateY(-1px);
+}
+.btn-bronze:disabled { opacity: 0.45; cursor: not-allowed; }
 
+/* ── CARDS ──────────────────────────────────────── */
+
+/* Parchment card — warm aged paper */
 .card-parchment {
-  background-color: var(--color-parchment);
-  color: #3a2010;
-  border: 3px solid var(--color-bronze);
+  background: linear-gradient(145deg, #f7eac8, #e8d090, #f0dfa8);
+  color: var(--ink);
+  border: 3px solid var(--sand-deep);
   border-radius: 1rem;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow:
+    0 6px 28px rgba(74,46,24,0.55),
+    0 2px 8px  rgba(160,100,20,0.30),
+    inset 0 1px 0 rgba(255,245,200,0.60);
 }
 
+/* Dark card — deep jungle shadow, parchment edge */
 .card-dark {
-  background-color: #2a1a08;
-  border: 2px solid var(--color-bronze);
+  background: linear-gradient(145deg, rgba(30, 20, 10, 0.92), rgba(18, 45, 20, 0.92));
+  border: 2px solid rgba(90, 160, 80, 0.35);
   border-radius: 1rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  box-shadow:
+    0 4px 22px rgba(20,10,5,0.70),
+    inset 0 1px 0 rgba(245,200,66,0.08);
+  backdrop-filter: blur(4px);
+  /* Override text color for readability on dark bg */
+  color: var(--parchment);
 }
 
-.island-title {
-  font-family: 'Cinzel Decorative', cursive;
-  color: var(--color-gold);
-  text-shadow: 2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(240,192,64,0.3);
+/* Wood-plank card — for nav/containers */
+.card-wood {
+  background: linear-gradient(145deg, #c88840, #8b5e3c, #7a4e30);
+  border: 3px solid #4a2e18;
+  border-radius: 0.75rem;
+  box-shadow:
+    0 4px 18px rgba(30,10,5,0.60),
+    inset 0 1px 0 rgba(255,220,140,0.25),
+    inset 0 -1px 0 rgba(0,0,0,0.35);
 }
 
+/* ── NAV LINK ───────────────────────────────────── */
 .nav-link {
-  @apply px-4 py-2 rounded-lg font-semibold transition-colors;
-  font-family: 'Cinzel', serif;
-  color: var(--color-parchment);
+  @apply px-4 py-2 rounded-lg transition-colors;
+  font-family: var(--font-body), 'Nunito', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--parchment);
 }
-
 .nav-link:hover {
-  background-color: rgba(240,192,64,0.2);
-  color: var(--color-gold);
+  background-color: rgba(245,200,66,0.18);
+  color: var(--sand-light);
 }
 
+/* ── FORM INPUTS (override for parchment bg contexts) ── */
+.input-parchment {
+  background: rgba(245,235,185,0.25);
+  border: 2px solid rgba(160,110,40,0.55);
+  border-radius: 0.5rem;
+  color: var(--parchment);
+  padding: 0.5rem 0.75rem;
+}
+.input-parchment:focus {
+  outline: none;
+  border-color: var(--sand-light);
+}
+.input-parchment::placeholder { color: rgba(245,220,160,0.45); }
+
+/* ── UTILITIES ──────────────────────────────────── */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .text-balance { text-wrap: balance; }
+
+  .font-display {
+    font-family: var(--font-display), 'Bangers', cursive;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 }

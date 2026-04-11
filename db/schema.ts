@@ -33,10 +33,19 @@ export const classrooms = pgTable('classrooms', {
 export const groups = pgTable('groups', {
   id: serial('id').primaryKey(),
   classroom_id: integer('classroom_id').notNull().references(() => classrooms.id),
+  code: varchar('code', { length: 8 }).unique(),
   name: varchar('name', { length: 100 }),
+  student_name: varchar('student_name', { length: 100 }),
   character_index: integer('character_index').notNull().default(0),
   position: numeric('position', { precision: 5, scale: 1 }).notNull().default('0'),
   color: varchar('color', { length: 7 }).notNull().default('#20b090'),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const group_members = pgTable('group_members', {
+  id:         serial('id').primaryKey(),
+  group_id:   integer('group_id').notNull().references(() => groups.id, { onDelete: 'cascade' }),
+  name:       varchar('name', { length: 150 }).notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -60,7 +69,8 @@ export const day_entries = pgTable('day_entries', {
   created_at: timestamp('created_at').defaultNow().notNull(),
 });
 
-export type User = typeof users.$inferSelect;
-export type Classroom = typeof classrooms.$inferSelect;
-export type Group = typeof groups.$inferSelect;
-export type DayEntry = typeof day_entries.$inferSelect;
+export type User         = typeof users.$inferSelect;
+export type Classroom    = typeof classrooms.$inferSelect;
+export type Group        = typeof groups.$inferSelect;
+export type GroupMember  = typeof group_members.$inferSelect;
+export type DayEntry     = typeof day_entries.$inferSelect;

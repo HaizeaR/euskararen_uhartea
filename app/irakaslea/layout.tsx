@@ -22,7 +22,7 @@ export default function IrakasleaLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top nav */}
-      <nav className="sticky top-0 z-10 border-b border-amber-900 bg-amber-950 bg-opacity-95 backdrop-blur">
+      <nav className="sticky top-0 z-10 border-b border-wood-dark" style={{ background: 'linear-gradient(90deg,rgba(30,18,8,0.97),rgba(18,45,20,0.97))', backdropFilter: 'blur(6px)' }}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
           <h1 className="island-title text-lg whitespace-nowrap">Euskararen Uhartea</h1>
           <div className="flex items-center gap-1 flex-wrap">
@@ -34,13 +34,14 @@ export default function IrakasleaLayout({ children }: { children: React.ReactNod
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`nav-link text-sm ${isActive ? 'text-amber-400 bg-amber-900 bg-opacity-40' : ''}`}
+                  className={`nav-link text-sm ${isActive ? 'bg-amber-900 bg-opacity-50' : ''}`}
+                  style={isActive ? { color: '#f0d888' } : {}}
                 >
                   {item.label}
                 </Link>
               );
             })}
-            <button onClick={handleLogout} className="text-amber-500 text-sm ml-2 underline opacity-70 hover:opacity-100">
+            <button onClick={handleLogout} className="text-sm ml-2 underline opacity-70 hover:opacity-100" style={{ color: '#f0d888' }}>
               Irten
             </button>
           </div>

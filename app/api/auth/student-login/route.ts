@@ -1,44 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, classrooms, groups } from '@/db';
+import { db, groups, classrooms } from '@/db';
 import { eq, and } from 'drizzle-orm';
 import { signJWT, setCookieToken } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
-    const { code, group_id } = await req.json();
+    const { code } = await req.json();
 
-    if (!code || !group_id) {
-      return NextResponse.json({ error: 'Kodea eta taldea beharrezkoak dira' }, { status: 400 });
+    if (!code) {
+      return NextResponse.json({ error: 'Talde-kodea beharrezkoa da' }, { status: 400 });
     }
 
-    const [classroom] = await db
-      .select()
-      .from(classrooms)
-      .where(and(eq(classrooms.code, code.toUpperCase()), eq(classrooms.is_active, true)))
-      .limit(1);
-
-    if (!classroom) {
-      return NextResponse.json({ error: 'Kode okerra edo klase ez aktiboa' }, { status: 404 });
-    }
-
-    const [group] = await db
-      .select()
+    const [result] = await db
+      .select({
+        id:             groups.id,
+        classroom_id:   groups.classroom_id,
+        code:           groups.code,
+        name:           groups.name,
+        student_name:   groups.student_name,
+        character_index: groups.character_index,
+        position:       groups.position,
+        color:          groups.color,
+      })
       .from(groups)
-      .where(and(eq(groups.id, parseInt(group_id)), eq(groups.classroom_id, classroom.id)))
+      .innerJoin(classrooms, eq(groups.classroom_id, classrooms.id))
+      .where(and(
+        eq(groups.code, code.trim().toUpperCase()),
+        eq(classrooms.is_active, true),
+      ))
       .limit(1);
 
-    if (!group) {
-      return NextResponse.json({ error: 'Taldea ez da aurkitu' }, { status: 404 });
+    if (!result) {
+      return NextResponse.json({ error: 'Talde-kode okerra edo klase ez aktiboa' }, { status: 404 });
     }
 
     const token = await signJWT({
-      role: 'student',
-      groupId: group.id,
-      classroomId: classroom.id,
+      role:        'student',
+      groupId:     result.id,
+      classroomId: result.classroom_id,
     });
     const { name, value, options } = setCookieToken(token);
 
-    const res = NextResponse.json({ ok: true, group });
+    const needsSetup = !result.student_name;
+
+    const res = NextResponse.json({ ok: true, group: result, needsSetup });
     res.cookies.set(name, value, options as Parameters<typeof res.cookies.set>[2]);
     return res;
   } catch (err) {

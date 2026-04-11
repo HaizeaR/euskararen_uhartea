@@ -4,9 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+import Image from 'next/image';
+import { CHARACTERS, CHARACTER_NAMES } from '@/lib/characters';
+
 type Group = {
   id: number;
   name: string | null;
+  student_name: string | null;
   character_index: number;
   color: string;
   position: string;
@@ -21,13 +25,9 @@ type DayEntry = {
   validated_by_teacher: boolean;
 };
 
-const CHARACTER_ICONS = ['⚔️', '🏹', '🌊', '🔥', '🌿', '⭐'];
-const CHARACTER_NAMES = ['Amaia', 'Iker', 'Nerea', 'Unai', 'Leire', 'Mikel'];
-
 export default function JuegoPage() {
   const router = useRouter();
   const [group, setGroup] = useState<Group | null>(null);
-  const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [recentEntries, setRecentEntries] = useState<DayEntry[]>([]);
   const [todayEntry, setTodayEntry] = useState<DayEntry | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +35,6 @@ export default function JuegoPage() {
   useEffect(() => {
     async function load() {
       try {
-        // Get current group info via session API
         const res = await fetch('/api/session');
         if (!res.ok) {
           router.push('/');
@@ -43,16 +42,18 @@ export default function JuegoPage() {
         }
         const session = await res.json();
 
-        // Get all groups for classroom
+        // Only fetch own group
         const groupsRes = await fetch(`/api/groups?classroom_id=${session.classroomId}`);
         const groups = await groupsRes.json();
-        setAllGroups(groups);
 
         const myGroup = groups.find((g: Group) => g.id === session.groupId);
+        if (myGroup && !myGroup.student_name) {
+          router.push('/juego/setup');
+          return;
+        }
         setGroup(myGroup || null);
 
         if (myGroup) {
-          // Get recent entries
           const entriesRes = await fetch(`/api/entries?group_id=${myGroup.id}`);
           const entries = await entriesRes.json();
           setRecentEntries(entries.slice(-5).reverse());
@@ -111,10 +112,16 @@ export default function JuegoPage() {
         style={{ backgroundColor: group.color, borderColor: group.color }}
       >
         <div className="flex items-center gap-4">
-          <span className="text-5xl">{CHARACTER_ICONS[group.character_index]}</span>
+          <Image
+            src={CHARACTERS[group.character_index]?.image ?? CHARACTERS[0].image}
+            alt=""
+            width={64}
+            height={64}
+            className="object-contain drop-shadow-xl flex-shrink-0"
+          />
           <div>
             <h2 className="text-2xl font-bold">
-              {group.name || CHARACTER_NAMES[group.character_index]}
+              {group.student_name || group.name || CHARACTER_NAMES[group.character_index]}
             </h2>
             <p className="opacity-80 text-sm">Taldea #{group.id}</p>
           </div>
@@ -162,34 +169,6 @@ export default function JuegoPage() {
         >
           🚪 Irten
         </button>
-      </div>
-
-      {/* Ranking */}
-      <div className="card-dark p-4 mb-6">
-        <h3 className="text-amber-400 font-bold mb-3">📊 Taldeen egoera</h3>
-        <div className="space-y-2">
-          {[...allGroups]
-            .sort((a, b) => parseFloat(b.position) - parseFloat(a.position))
-            .map((g, i) => (
-              <div
-                key={g.id}
-                className={`flex items-center gap-3 p-2 rounded-lg ${g.id === group.id ? 'ring-2 ring-amber-400' : ''}`}
-              >
-                <span className="text-amber-500 font-bold w-6">#{i + 1}</span>
-                <span
-                  className="w-3 h-3 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: g.color }}
-                />
-                <span className="flex-1 text-sm">
-                  {g.name || CHARACTER_NAMES[g.character_index]}
-                  {g.id === group.id && ' (zu)'}
-                </span>
-                <span className="text-amber-300 text-sm font-semibold">
-                  {parseFloat(g.position)} pos.
-                </span>
-              </div>
-            ))}
-        </div>
       </div>
 
       {/* Recent entries */}
