@@ -108,35 +108,47 @@ export default function JuegoPage() {
 
       {/* Group Card */}
       <div
-        className="rounded-2xl p-6 mb-6 border-4 text-white shadow-xl"
-        style={{ backgroundColor: group.color, borderColor: group.color }}
+        className="rounded-2xl p-5 mb-6 text-white shadow-xl relative overflow-hidden"
+        style={{
+          background: `linear-gradient(135deg, ${group.color}cc, ${group.color}88)`,
+          border: `3px solid ${group.color}`,
+        }}
       >
-        <div className="flex items-center gap-4">
-          <Image
-            src={CHARACTERS[group.character_index]?.image ?? CHARACTERS[0].image}
-            alt=""
-            width={64}
-            height={64}
-            className="object-contain drop-shadow-xl flex-shrink-0"
-          />
-          <div>
-            <h2 className="text-2xl font-bold">
+        {/* Decorative background glow */}
+        <div className="absolute -right-8 -top-8 opacity-20 pointer-events-none"
+          style={{ width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(30px)' }} />
+
+        <div className="flex items-end gap-4">
+          {/* Large character */}
+          <div className="relative flex-shrink-0" style={{ width: 110, height: 110, filter: `drop-shadow(0 4px 12px ${group.color})` }}>
+            <Image
+              src={CHARACTERS[group.character_index]?.image ?? CHARACTERS[0].image}
+              alt=""
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="flex-1 pb-1">
+            <h2 className="text-2xl font-black leading-tight drop-shadow">
               {group.student_name || group.name || CHARACTER_NAMES[group.character_index]}
             </h2>
-            <p className="opacity-80 text-sm">Taldea #{group.id}</p>
+            <p className="opacity-70 text-sm font-semibold mt-0.5">
+              {CHARACTERS[group.character_index]?.label} taldea
+            </p>
+            {/* Mini position badge */}
+            <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-bold"
+              style={{ background: 'rgba(0,0,0,0.28)', backdropFilter: 'blur(4px)' }}>
+              🗺️ {position} / {mapTotal} posizio
+            </div>
           </div>
         </div>
 
         {/* Progress bar */}
         <div className="mt-4">
-          <div className="flex justify-between text-sm mb-1 opacity-90">
-            <span>Ibilbidea</span>
-            <span>{position} / {mapTotal} posizio</span>
-          </div>
-          <div className="w-full bg-black bg-opacity-30 rounded-full h-4">
+          <div className="w-full bg-black bg-opacity-30 rounded-full h-3 overflow-hidden">
             <div
-              className="h-4 rounded-full transition-all duration-500"
-              style={{ width: `${progressPct}%`, backgroundColor: 'rgba(255,255,255,0.7)' }}
+              className="h-3 rounded-full transition-all duration-700"
+              style={{ width: `${progressPct}%`, background: 'rgba(255,255,255,0.75)' }}
             />
           </div>
           {position >= mapTotal && (

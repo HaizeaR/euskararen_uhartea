@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
-import { Bangers, Nunito } from 'next/font/google';
+import { Fredoka, Nunito } from 'next/font/google';
 import './globals.css';
 
-/* ── Display: chunky, playful, adventure ── */
-const bangers = Bangers({
-  weight: '400',
+/* ── Display: Fredoka — round, friendly, easy to read for kids ── */
+const fredoka = Fredoka({
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-display',
 });
 
-/* ── Body: clean, rounded, readable ── */
+/* ── Body: Nunito — clean, rounded, very readable ── */
 const nunito = Nunito({
   subsets: ['latin'],
   weight: ['400', '600', '700', '800'],
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="eu" className={`${bangers.variable} ${nunito.variable}`}>
+    <html lang="eu" className={`${fredoka.variable} ${nunito.variable}`}>
       <body className="antialiased">{children}</body>
     </html>
   );
