@@ -6,6 +6,7 @@ import Link from 'next/link';
 const NAV_ITEMS = [
   { href: '/irakaslea', label: '📊 Dashboard', exact: true },
   { href: '/irakaslea/grupos', label: '👥 Taldeak' },
+  { href: '/irakaslea/ikasleak', label: '🎒 Ikasleak' },
   { href: '/irakaslea/historia', label: '📅 Historia' },
   { href: '/irakaslea/configuracion', label: '⚙️ Konfigurazioa' },
 ];
