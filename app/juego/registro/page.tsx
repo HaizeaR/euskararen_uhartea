@@ -316,6 +316,35 @@ export default function RegistroPage() {
           <h1 className="island-title text-xl">Gaur Erregistratu</h1>
         </header>
 
+        {/* ── WEEKEND BLOCK ── */}
+        {(todayDow === 0 || todayDow === 6) && (
+          <div
+            className="rounded-3xl p-8 text-center mb-5"
+            style={{
+              background: `linear-gradient(135deg, ${char.color}18, ${char.color}08)`,
+              border: `1.5px solid ${char.color}30`,
+            }}
+          >
+            <div className="text-6xl mb-4">🏖️</div>
+            <p className="font-black text-2xl mb-2" style={{ color: '#fff', fontFamily: 'Rubik, sans-serif' }}>
+              Asteburua da!
+            </p>
+            <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.60)' }}>
+              Gaur ez dago erregistrorik. Atseden har ezazu eta astelehenean ikusiko gara!
+            </p>
+            <Link
+              href="/juego"
+              className="inline-block mt-5 px-6 py-3 rounded-2xl font-black text-base text-white"
+              style={{ background: `linear-gradient(135deg, ${char.color}cc, ${char.color}88)` }}
+            >
+              Itzuli ←
+            </Link>
+          </div>
+        )}
+
+        {/* ── MAIN CONTENT (weekdays only) ── */}
+        {todayDow !== 0 && todayDow !== 6 && (<>
+
         {/* ── CHARACTER + BATTERY ── */}
         <div
           className="rounded-2xl p-4 mb-5 flex items-center gap-4"
@@ -455,6 +484,8 @@ export default function RegistroPage() {
             {loading ? 'Gordetzen...' : '✅ Gorde eta aurrera!'}
           </button>
         </form>
+
+        </>)}
       </main>
     </>
   );

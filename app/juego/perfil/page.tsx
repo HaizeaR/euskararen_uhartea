@@ -271,13 +271,12 @@ export default function PerfilPage() {
               >
                 {isUnlocked && reward ? (
                   <>
-                    <Image
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={reward.image}
                       alt={reward.name}
-                      width={72}
-                      height={72}
-                      className="object-contain flex-shrink-0"
-                      style={{ filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.22))' }}
+                      className="flex-shrink-0"
+                      style={{ width: 72, height: 72, objectFit: 'contain', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.22))' }}
                     />
                     <div className="min-w-0">
                       <p className="font-black text-sm leading-tight" style={{ color: '#3d2510' }}>
