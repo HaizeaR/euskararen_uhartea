@@ -390,7 +390,7 @@ export default function RegistroPage() {
               ))}
               <span className="absolute inset-0 flex items-center justify-center text-xs font-bold"
                 style={{ color: totalScore > 3 ? '#fff' : 'rgba(255,255,255,0.4)', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
-                +{advance} pos.
+                +{Number.isInteger(advance) ? advance : advance.toFixed(1)} pos.
               </span>
             </div>
 
@@ -407,6 +407,27 @@ export default function RegistroPage() {
             </p>
           </div>
         </div>
+
+        {/* ── Today's subjects strip ── */}
+        {TODAY_SUBJECTS.length > 0 && (
+          <div
+            className="flex items-center gap-2 flex-wrap px-4 py-2.5 rounded-2xl mb-1"
+            style={{ background: 'rgba(146,173,164,0.10)', border: '1px solid rgba(146,173,164,0.18)' }}
+          >
+            <span className="text-xs font-black uppercase tracking-widest shrink-0" style={{ color: '#92ADA4' }}>
+              📅 Gaur:
+            </span>
+            {TODAY_SUBJECTS.map((s, i) => (
+              <span
+                key={i}
+                className="text-xs font-bold px-2 py-0.5 rounded-lg"
+                style={{ background: 'rgba(146,173,164,0.15)', color: 'rgba(237,213,192,0.75)', border: '1px solid rgba(146,173,164,0.22)' }}
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-3">
           {TODAY_SUBJECTS.length === 0 ? (

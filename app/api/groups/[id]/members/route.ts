@@ -17,10 +17,15 @@ export async function GET(
 ) {
   try {
     const session = await getSessionFromRequest(req);
-    if (!session || session.role !== 'teacher') {
-      return NextResponse.json({ error: 'Baimena beharrezkoa da' }, { status: 403 });
-    }
+    if (!session) return NextResponse.json({ error: 'Baimena beharrezkoa da' }, { status: 403 });
+
     const groupId = parseInt(params.id);
+
+    // Students may only see their own group's members
+    if (session.role === 'student' && session.groupId !== groupId) {
+      return NextResponse.json({ error: 'Baimena ukatua' }, { status: 403 });
+    }
+
     const members = await db
       .select()
       .from(group_members)

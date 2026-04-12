@@ -41,10 +41,10 @@ export async function POST() {
         .returning({ id: day_entries.id });
       deletedEntries = deleted.length;
 
-      // Reset positions to 0 and clear student names (force re-setup)
+      // Reset positions to 0, clear student names, and reset initial reward flag
       await db
         .update(groups)
-        .set({ position: '0', student_name: null })
+        .set({ position: '0', student_name: null, initial_reward_shown: false })
         .where(inArray(groups.id, groupIds));
     }
 

@@ -141,6 +141,7 @@ export default function JuegoPage() {
   const [recentEntries,  setRecentEntries]  = useState<DayEntry[]>([]);
   const [todayEntry,     setTodayEntry]     = useState<DayEntry | null>(null);
   const [mapTotal,       setMapTotal]       = useState(50);
+  const [members,        setMembers]        = useState<string[]>([]);
   const [loading,        setLoading]        = useState(true);
   const [ready,          setReady]          = useState(false);
   const [teacherMsg,     setTeacherMsg]     = useState<string | null>(null);
@@ -170,11 +171,18 @@ export default function JuegoPage() {
           if (c?.map_total) setMapTotal(c.map_total);
         }
 
-        const entriesRes = await fetch(`/api/entries?group_id=${myGroup.id}`);
+        const [entriesRes, membersRes] = await Promise.all([
+          fetch(`/api/entries?group_id=${myGroup.id}`),
+          fetch(`/api/groups/${myGroup.id}/members`),
+        ]);
         const entries: DayEntry[] = await entriesRes.json();
         setRecentEntries(entries.slice(-5).reverse());
         const today = new Date().toISOString().split('T')[0];
         setTodayEntry(entries.find((e: DayEntry) => e.entry_date === today) ?? null);
+        if (membersRes.ok) {
+          const ms: { name: string }[] = await membersRes.json();
+          setMembers(ms.map(m => m.name));
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -334,6 +342,21 @@ export default function JuegoPage() {
             >
               {group.student_name || group.name || CHARACTER_NAMES[group.character_index]}
             </h2>
+
+            {/* Team members */}
+            {members.length > 0 && (
+              <div className="z-10 flex flex-wrap justify-center gap-1.5 mb-3 px-2">
+                {members.map((m, i) => (
+                  <span
+                    key={i}
+                    className="text-xs font-bold px-2.5 py-1 rounded-full"
+                    style={{ background: c1(0.20), color: 'rgba(255,255,255,0.85)', border: `1px solid ${c1(0.30)}` }}
+                  >
+                    {m}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {/* Position badge */}
             <div
