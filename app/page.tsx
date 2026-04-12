@@ -58,7 +58,7 @@ export default function HomePage() {
         className="text-center font-bold tracking-widest uppercase text-sm mb-8 -mt-4"
         style={{ color: '#4a7068', letterSpacing: '0.18em' }}
       >
-        Joko Hezigarria
+        Alkartu Ikastola
       </p>
 
       {/* ── Login card ── */}

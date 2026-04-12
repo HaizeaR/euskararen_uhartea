@@ -159,7 +159,7 @@ export default function PerfilPage() {
         {[
           { label: 'Sarrerak',     value: entries.length,                  icon: '📝' },
           { label: 'Batez beste',  value: avg !== null ? `${avg.toFixed(1)}` : '—', icon: '⭐' },
-          { label: 'Errautsak',    value: streak,                          icon: '🔥' },
+          { label: 'Bolada',    value: streak,                          icon: '🔥' },
         ].map(stat => (
           <div key={stat.label} className="card-parchment p-3 text-center">
             <div className="text-xl mb-0.5">{stat.icon}</div>
@@ -199,7 +199,7 @@ export default function PerfilPage() {
       {/* ── Rewards inventory ── */}
       <div className="card-parchment p-4 mb-4">
         <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: '#92ADA4' }}>
-          Tresna Inbentarioa
+          Tresna Biltegia
         </p>
         <div className="grid grid-cols-2 gap-3">
           {CHECKPOINTS.filter(cp => cp.id > 0).map((cp, idx) => {
@@ -245,7 +245,7 @@ export default function PerfilPage() {
                       <span style={{ fontSize: 34, opacity: 0.30 }}>❓</span>
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-sm opacity-35" style={{ color: '#3d2510' }}>Lorteke</p>
+                      <p className="font-bold text-sm opacity-35" style={{ color: '#3d2510' }}>Ez ezaguna</p>
                       <p className="text-xs mt-0.5 opacity-30" style={{ color: '#84572F' }}>
                         {cp.icon} {cp.name}
                       </p>

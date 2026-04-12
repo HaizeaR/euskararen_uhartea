@@ -18,17 +18,17 @@ export const CHECKPOINTS: Checkpoint[] = [
     requiredPos: 0,
     x: 0.165, y: 0.800,
     description:
-      'Bidaiaren hasiera! Uharte honen hondartza eder honetan, itsasoak historia zaharrak kontatzen ditu. Lehen pausoa eman duzu — aurrera!',
+      'Bidaiaren hasiera! Uharte honen hondartza eder honetan, itsasoak historia zaharrak kontatzen ditu. Lehen pausoa eman dituzu — aurrera!',
   },
   {
     id: 1,
-    name: 'Erromaren Kanpalekua',
+    name: 'Kanpamentu Erromatarra',
     icon: '⚔️',
     reward: '🦅',
     requiredPos: 9,
     x: 0.415, y: 0.730,
     description:
-      'Erromako soldaduak duela 2000 urte hemen kanpatu ziren. Diziplina eta ahaleginak bide luzeak egiten uzten du. Legioaren gogoa lortu duzu!',
+      'Duela 2000 urte, erromatar soldaduak hemen kanpatzen ziren. Talde-lanari eta antolaketa zorrotzari esker, inperio osoa zeharkatu zuten. Zuek ere elkarlanean, zuen ontzirako pieza baliotsu bat berreskuratu duzue!',
   },
   {
     id: 2,
@@ -38,7 +38,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     requiredPos: 18,
     x: 0.730, y: 0.830,
     description:
-      'Azteken zibilizazio handiak piramide izugarri hau eraiki zuen eguzki jainkoaren omenez. Jakinduria eta indarra uztartzean datza haien sekretua.',
+      'Azteken tenpluetan, zerua eta lurra lotzen ziren errituen bidez. Harrizko egitura hauek izarren mugimenduekin lotuta zeuden. Tenpluaren sakonean, zuen ontzia konpontzeko pieza baliotsu bat aurkitu duzue!',
   },
   {
     id: 3,
@@ -48,7 +48,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     requiredPos: 27,
     x: 0.810, y: 0.530,
     description:
-      'Sumendiaren aldapa gorrian gora igo behar duzu. Ausartak bakarrik iristen dira hona — beldurra gainditzea da erronkarik handiena.',
+      'Sumendiak Lurraren barruko beroaren ondorioz sortzen dira, eta laba beroa kanporatzen dute. Bide hau arriskutsua izan arren, naturaren indarra erakusten du. Errautsen eta harri beroen artean, zuen ontzia konpontzeko beharrezko pieza bat berreskuratu duzue!”',
   },
   {
     id: 4,
@@ -58,7 +58,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     requiredPos: 36,
     x: 0.570, y: 0.275,
     description:
-      'Zaldun nobleak eta erregeak hemen bizi ziren. Errespetua eta taldekidetasuna ziren gazteluaren oinarri sendoenak. Ohore guztia zuretzat!',
+      'Erdi Aroan, gazteluak leku estrategikoetan eraikitzen ziren, ingurua kontrolatzeko eta babesteko. Harresi altuek eta dorreek segurtasuna ematen zuten. Gazteluko txokoak arakatzen, zuen ontzia konpontzeko beharrezko pieza bat topatu duzue!',
   },
   {
     id: 5,
@@ -68,7 +68,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     requiredPos: 43,
     x: 0.225, y: 0.360,
     description:
-      'Haran lasai honetan Grezia zaharreko jakintsuak filosofia eta hizkuntza lantzen zituzten. Jakinduria eguneroko ahaleginen emaitza da.',
+      'Antzinako Grezian, filosofoak tenpluetan eta plazetan elkartzen ziren pentsatzeko eta eztabaidatzeko. Haran lasai honetan, jakinduria egunez egun lantzen zuten. Ingurua miatuta, ontzirako pieza baliotsu bat eskuratu duzue!',
   },
   {
     id: 6,
@@ -78,7 +78,7 @@ export const CHECKPOINTS: Checkpoint[] = [
     requiredPos: 50,
     x: 0.875, y: 0.130,
     description:
-      'Zorionak! Bidaiaren amaierara iritsi zara! Denbora Ontzian denboran zehar bidaia dezakezu — historian ikasitako guztia erabiliz. Benetan itzela!',
+      'Zorionak! Bidaiaren amaierara iritsi zarete! Bidean zehar bildutako piezekin, Denbora Ontzia konpondu duzue. Orain, historian zehar bidaiatzeko prest zaudete. Lan bikaina!',
   },
 ];
 

@@ -430,7 +430,7 @@ export default function GruposPage() {
                                   onClick={() => validateEntry(entry.id, g.id)}
                                   className="text-amber-600 hover:text-green-400 transition-colors"
                                 >
-                                  Baliozta
+                                  Balioztatu
                                 </button>
                               )}
                             </span>
