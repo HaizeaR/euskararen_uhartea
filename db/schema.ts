@@ -26,6 +26,7 @@ export const classrooms = pgTable('classrooms', {
   code: varchar('code', { length: 6 }).notNull().unique(),
   teacher_id: integer('teacher_id').notNull().references(() => users.id),
   map_total: integer('map_total').default(50).notNull(),
+  class_names: varchar('class_names', { length: 500 }),   // JSON array of 5 strings
   is_active: boolean('is_active').default(true).notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
 });

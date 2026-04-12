@@ -10,7 +10,7 @@ import { getRewardForCheckpoint, type Reward } from '@/lib/rewards';
 
 type ClassData = { euskera: boolean; errespetua: boolean };
 
-const CLASS_NAMES = [
+const DEFAULT_CLASS_NAMES = [
   'Matematika',
   'Hizkuntza',
   'Natur Zientziak',
@@ -117,6 +117,7 @@ export default function RegistroPage() {
   const [classes,     setClasses]     = useState<ClassData[]>(Array(5).fill(null).map(() => ({ euskera: false, errespetua: false })));
   const [charIdx,     setCharIdx]     = useState(0);
   const [currentPos,  setCurrentPos]  = useState(0);
+  const [classNames,  setClassNames]  = useState<string[]>(DEFAULT_CLASS_NAMES);
   const [groupId,     setGroupId]     = useState<number | null>(null);
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState('');
@@ -125,16 +126,20 @@ export default function RegistroPage() {
   useEffect(() => {
     fetch('/api/session').then(r => r.json()).then(s => {
       if (s.groupId) {
-        fetch(`/api/groups?classroom_id=${s.classroomId}`)
-          .then(r => r.json())
-          .then((gs: { id: number; character_index: number; position: string }[]) => {
-            const g = gs.find(x => x.id === s.groupId);
-            if (g) {
-              setCharIdx(g.character_index);
-              setCurrentPos(parseFloat(g.position));
-              setGroupId(g.id);
-            }
-          });
+        Promise.all([
+          fetch(`/api/groups?classroom_id=${s.classroomId}`).then(r => r.json()),
+          fetch('/api/teacher/classrooms').then(r => r.ok ? r.json() : null),
+        ]).then(([gs, classroomData]) => {
+          const g = gs.find((x: { id: number }) => x.id === s.groupId);
+          if (g) {
+            setCharIdx(g.character_index);
+            setCurrentPos(parseFloat(g.position));
+            setGroupId(g.id);
+          }
+          if (classroomData?.classroom?.class_names) {
+            try { setClassNames(JSON.parse(classroomData.classroom.class_names)); } catch {}
+          }
+        });
       }
     });
   }, []);
@@ -262,7 +267,7 @@ export default function RegistroPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-2.5">
-          {CLASS_NAMES.map((name, i) => (
+          {classNames.map((name, i) => (
             <div key={i} className="card-dark px-4 py-3 rounded-2xl">
               <p className="text-xs font-bold uppercase tracking-widest mb-2.5" style={{ color: '#92ADA4' }}>
                 {i + 1}. {name}
