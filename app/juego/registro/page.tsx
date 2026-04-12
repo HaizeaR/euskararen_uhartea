@@ -454,54 +454,35 @@ export default function RegistroPage() {
           </div>
         </div>
 
-        {/* ── Today's subjects strip ── */}
-        {TODAY_SUBJECTS.length > 0 && (
-          <div
-            className="flex items-center gap-2 flex-wrap px-4 py-2.5 rounded-2xl mb-1"
-            style={{ background: 'rgba(146,173,164,0.10)', border: '1px solid rgba(146,173,164,0.18)' }}
-          >
-            <span className="text-xs font-black uppercase tracking-widest shrink-0" style={{ color: '#92ADA4' }}>
-              📅 Gaur:
-            </span>
-            {TODAY_SUBJECTS.map((s, i) => (
-              <span
-                key={i}
-                className="text-xs font-bold px-2 py-0.5 rounded-lg"
-                style={{ background: 'rgba(146,173,164,0.15)', color: 'rgba(237,213,192,0.75)', border: '1px solid rgba(146,173,164,0.22)' }}
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-2.5">
           {TODAY_SUBJECTS.length === 0 ? (
             <p className="text-center py-8 text-sm font-bold opacity-60" style={{ color: 'var(--parchment)' }}>
               Gaur ez dago klaseen erregistrorik.
             </p>
           ) : TODAY_SUBJECTS.map((name, i) => (
-            <div key={i} className="card-dark px-4 pt-3 pb-4 rounded-2xl">
-              <p className="text-sm font-black uppercase tracking-widest mb-3" style={{ color: '#92ADA4' }}>
+            <div key={i} className="card-dark px-4 py-3 rounded-2xl">
+              {/* Subject name */}
+              <p className="text-xs font-black uppercase tracking-widest mb-2" style={{ color: '#92ADA4' }}>
                 {i + 1}. {name}
               </p>
-              <div className="grid grid-cols-2 gap-2.5">
+              {/* Horizontal toggle row */}
+              <div className="flex gap-2">
                 {/* Euskera button */}
                 <button
                   type="button"
                   onClick={() => toggleClass(i, 'euskera')}
-                  className="flex flex-col items-center gap-1.5 py-4 rounded-2xl border-2 transition-all active:scale-95"
+                  className="flex-1 flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 transition-all active:scale-95"
                   style={{
                     borderColor: classes[i].euskera ? '#7edaaa' : 'rgba(146,173,164,0.20)',
                     background:  classes[i].euskera ? 'rgba(100,185,140,0.18)' : 'rgba(0,0,0,0.18)',
                   }}
                 >
-                  <span className="text-3xl leading-none">{classes[i].euskera ? '🗣️' : '💬'}</span>
-                  <span className="text-xs font-black leading-tight text-center px-1"
+                  <span className="text-xl leading-none flex-shrink-0">{classes[i].euskera ? '🗣️' : '💬'}</span>
+                  <span className="text-xs font-black leading-tight text-left flex-1"
                     style={{ color: classes[i].euskera ? '#7edaaa' : 'rgba(237,213,192,0.40)' }}>
-                    Euskaraz!
+                    Euskaraz hitz egin dut
                   </span>
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center"
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
                     style={{
                       background: classes[i].euskera ? '#7edaaa' : 'rgba(255,255,255,0.08)',
                       border: classes[i].euskera ? 'none' : '1.5px solid rgba(255,255,255,0.15)',
@@ -516,18 +497,18 @@ export default function RegistroPage() {
                 <button
                   type="button"
                   onClick={() => toggleClass(i, 'errespetua')}
-                  className="flex flex-col items-center gap-1.5 py-4 rounded-2xl border-2 transition-all active:scale-95"
+                  className="flex-1 flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 transition-all active:scale-95"
                   style={{
                     borderColor: classes[i].errespetua ? '#f5cc50' : 'rgba(146,173,164,0.20)',
                     background:  classes[i].errespetua ? 'rgba(241,168,5,0.14)' : 'rgba(0,0,0,0.18)',
                   }}
                 >
-                  <span className="text-3xl leading-none">{classes[i].errespetua ? '🤝' : '👐'}</span>
-                  <span className="text-xs font-black leading-tight text-center px-1"
+                  <span className="text-xl leading-none flex-shrink-0">{classes[i].errespetua ? '🤝' : '👐'}</span>
+                  <span className="text-xs font-black leading-tight text-left flex-1"
                     style={{ color: classes[i].errespetua ? '#f5cc50' : 'rgba(237,213,192,0.40)' }}>
-                    Errespetua!
+                    Errespetuz jokatu dut
                   </span>
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center"
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
                     style={{
                       background: classes[i].errespetua ? '#f5cc50' : 'rgba(255,255,255,0.08)',
                       border: classes[i].errespetua ? 'none' : '1.5px solid rgba(255,255,255,0.15)',

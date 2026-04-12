@@ -28,26 +28,25 @@ export async function PATCH(
 
     const body = await req.json();
 
-    const fields = [
-      'class_1_euskera','class_1_errespetua',
-      'class_2_euskera','class_2_errespetua',
-      'class_3_euskera','class_3_errespetua',
-      'class_4_euskera','class_4_errespetua',
-      'class_5_euskera','class_5_errespetua',
-    ] as const;
+    // Use the schedule for the entry's date — only count fields for that day's subjects
+    const entryDow = new Date(entry.entry_date + 'T12:00:00').getDay();
+    const subjects = WEEKLY_SCHEDULE[entryDow] ?? [];
+    const subjectCount = subjects.length > 0 ? subjects.length : 5;
+    const maxPoints = subjectCount * 2;
 
     const boolValues: Record<string, boolean> = {};
     let trueCount = 0;
-    for (const f of fields) {
-      const val = Boolean(body[f]);
-      boolValues[f] = val;
-      if (val) trueCount++;
+    for (let k = 1; k <= 5; k++) {
+      const euField = `class_${k}_euskera`;
+      const erField = `class_${k}_errespetua`;
+      // Force fields beyond this day's subjects to false
+      const euVal = k <= subjectCount ? Boolean(body[euField]) : false;
+      const erVal = k <= subjectCount ? Boolean(body[erField]) : false;
+      boolValues[euField] = euVal;
+      boolValues[erField] = erVal;
+      if (euVal) trueCount++;
+      if (erVal) trueCount++;
     }
-
-    // Use the schedule for the entry's date to normalize score correctly
-    const entryDow = new Date(entry.entry_date + 'T12:00:00').getDay();
-    const subjects = WEEKLY_SCHEDULE[entryDow] ?? [];
-    const maxPoints = subjects.length > 0 ? subjects.length * 2 : 10;
     const newScore = Math.round((trueCount / maxPoints) * 10);
     const newAdvance = newScore / 2;
 

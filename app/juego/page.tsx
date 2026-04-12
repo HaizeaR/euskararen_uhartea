@@ -7,6 +7,10 @@ import Image from 'next/image';
 import { CHARACTERS, CHARACTER_NAMES } from '@/lib/characters';
 import { CHECKPOINTS } from '@/lib/checkpoints';
 import { getGroupRewards } from '@/lib/rewards';
+import { WEEKLY_SCHEDULE } from '@/lib/schedule';
+
+const todayDow = new Date().getDay();
+const TODAY_SUBJECTS: string[] = WEEKLY_SCHEDULE[todayDow] ?? [];
 
 type Group = {
   id: number;
@@ -457,6 +461,27 @@ export default function JuegoPage() {
               >
                 <p className="text-3xl mb-2">🏆</p>
                 <p className="font-black text-xl" style={{ color: '#27ae60' }}>Zorionak! Helmugaraino iritsi zara!</p>
+              </div>
+            )}
+
+            {/* Today's subjects */}
+            {TODAY_SUBJECTS.length > 0 && (
+              <div
+                className="flex items-center gap-2 flex-wrap px-4 py-2.5 rounded-2xl"
+                style={{ background: cardBg, border: `1px solid ${cardBorder}` }}
+              >
+                <span className="text-xs font-black uppercase tracking-widest shrink-0" style={{ color: c1(0.65) }}>
+                  📅 Gaur:
+                </span>
+                {TODAY_SUBJECTS.map((s, i) => (
+                  <span
+                    key={i}
+                    className="text-xs font-bold px-2.5 py-1 rounded-lg"
+                    style={{ background: c1(0.15), color: 'rgba(237,213,192,0.85)', border: `1px solid ${c1(0.25)}` }}
+                  >
+                    {s}
+                  </span>
+                ))}
               </div>
             )}
 

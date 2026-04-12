@@ -30,24 +30,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Gaur dagoeneko sarrera bat dago' }, { status: 409 });
     }
 
-    const fields = [
-      'class_1_euskera', 'class_1_errespetua',
-      'class_2_euskera', 'class_2_errespetua',
-      'class_3_euskera', 'class_3_errespetua',
-      'class_4_euskera', 'class_4_errespetua',
-      'class_5_euskera', 'class_5_errespetua',
-    ] as const;
+    const subjects = getTodaySubjects();
+    const subjectCount = subjects.length > 0 ? subjects.length : 5;
+    const maxPoints = subjectCount * 2;
 
     const boolValues: Record<string, boolean> = {};
     let trueCount = 0;
-    for (const field of fields) {
-      const val = Boolean(body[field]);
-      boolValues[field] = val;
-      if (val) trueCount++;
+    for (let k = 1; k <= 5; k++) {
+      const euField = `class_${k}_euskera`;
+      const erField = `class_${k}_errespetua`;
+      // Force fields beyond today's subjects to false
+      const euVal = k <= subjectCount ? Boolean(body[euField]) : false;
+      const erVal = k <= subjectCount ? Boolean(body[erField]) : false;
+      boolValues[euField] = euVal;
+      boolValues[erField] = erVal;
+      if (euVal) trueCount++;
+      if (erVal) trueCount++;
     }
-
-    const subjects = getTodaySubjects();
-    const maxPoints = subjects.length > 0 ? subjects.length * 2 : 10;
     const score = Math.round((trueCount / maxPoints) * 10);
     const advance = score / 2;
 
