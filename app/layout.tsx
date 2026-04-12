@@ -26,7 +26,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="eu" className={`${rubik.variable} ${nunito.variable}`}>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <p
+          className="fixed bottom-2 right-3 text-xs pointer-events-none select-none"
+          style={{ color: 'rgba(132,87,47,0.28)', fontFamily: 'var(--font-body)', letterSpacing: '0.04em' }}
+        >
+          Eder Fernandez eta Haizea Rodriguez
+        </p>
+      </body>
     </html>
   );
 }
