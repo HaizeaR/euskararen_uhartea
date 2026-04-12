@@ -40,6 +40,7 @@ export const groups = pgTable('groups', {
   character_index: integer('character_index').notNull().default(0),
   position: numeric('position', { precision: 5, scale: 1 }).notNull().default('0'),
   color: varchar('color', { length: 7 }).notNull().default('#20b090'),
+  pending_message: varchar('pending_message', { length: 500 }),
   created_at: timestamp('created_at').defaultNow().notNull(),
 });
 

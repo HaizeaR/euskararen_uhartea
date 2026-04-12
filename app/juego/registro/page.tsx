@@ -25,6 +25,115 @@ function batteryColor(score: number) {
   return '#c03020';
 }
 
+/* ── Perfect score (10/10) celebration ──────────────────────── */
+function PerfectScoreCelebration({
+  advance,
+  charImage,
+  charColor,
+  onClose,
+}: {
+  advance: number;
+  charImage: string;
+  charColor: string;
+  onClose: () => void;
+}) {
+  const dots = Array.from({ length: 32 });
+  const colors = ['#F1A805','#27ae60','#e74c3c','#2980b9','#d63384','#EDD5C0','#fff'];
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(10,5,2,0.88)', backdropFilter: 'blur(10px)' }}
+    >
+      {/* Confetti burst */}
+      {dots.map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full animate-ping"
+          style={{
+            width:  5 + (i % 5) * 4,
+            height: 5 + (i % 5) * 4,
+            left:   `${4 + (i * 3.1) % 92}%`,
+            top:    `${3 + (i * 4.7) % 50}%`,
+            background: colors[i % colors.length],
+            animationDelay: `${(i * 0.08).toFixed(2)}s`,
+            animationDuration: `${0.7 + (i % 4) * 0.25}s`,
+            opacity: 0.75,
+          }}
+        />
+      ))}
+
+      <div
+        className="relative rounded-3xl p-8 max-w-xs w-full text-center shadow-2xl anim-pop"
+        style={{
+          background: `linear-gradient(160deg, #1a0e04, #0d0702)`,
+          border: `2px solid ${charColor}55`,
+          boxShadow: `0 0 60px ${charColor}44`,
+        }}
+      >
+        {/* Stars row */}
+        <div className="flex justify-center gap-1 mb-3">
+          {[0,1,2].map(i => (
+            <span
+              key={i}
+              className="text-3xl"
+              style={{
+                animation: `pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.12}s both`,
+                display: 'inline-block',
+              }}
+            >⭐</span>
+          ))}
+        </div>
+
+        {/* Character */}
+        <div
+          className="relative mx-auto mb-4 anim-float"
+          style={{
+            width: 100, height: 100,
+            filter: `drop-shadow(0 0 20px ${charColor})`,
+          }}
+        >
+          <Image src={charImage} alt="" fill className="object-contain" />
+        </div>
+
+        <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: charColor }}>
+          Puntuazio perfektua!
+        </p>
+        <h2
+          className="font-black mb-2 leading-none"
+          style={{
+            fontFamily: 'Rubik, var(--font-display), sans-serif',
+            color: '#fff',
+            fontSize: '2.4rem',
+          }}
+        >
+          10/10
+        </h2>
+        <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.65)' }}>
+          Egun guztian euskaraz eta errespetuz aritu zara. Itzela!
+        </p>
+
+        {/* Advance badge */}
+        <div
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-6 font-black text-base"
+          style={{
+            background: `${charColor}22`,
+            border: `1.5px solid ${charColor}55`,
+            color: '#fff',
+          }}
+        >
+          <span>🗺️</span>
+          <span>+{advance} posizio aurrera!</span>
+        </div>
+
+        <button onClick={onClose} className="w-full py-3 rounded-2xl font-black text-base text-white transition-all hover:opacity-90"
+          style={{ background: `linear-gradient(135deg, ${charColor}cc, ${charColor}88)` }}>
+          Zoragarria! →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Checkpoint celebration overlay ─────────────────────────── */
 function CheckpointCelebration({
   checkpoint,
@@ -121,7 +230,8 @@ export default function RegistroPage() {
   const [groupId,     setGroupId]     = useState<number | null>(null);
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState('');
-  const [celebration, setCelebration] = useState<{ checkpoint: Checkpoint; reward: Reward | null } | null>(null);
+  const [celebration,  setCelebration]  = useState<{ checkpoint: Checkpoint; reward: Reward | null } | null>(null);
+  const [perfectScore, setPerfectScore] = useState<{ advance: number } | null>(null);
 
   useEffect(() => {
     fetch('/api/session').then(r => r.json()).then(s => {
@@ -180,6 +290,8 @@ export default function RegistroPage() {
       if (unlocked) {
         const reward = groupId ? getRewardForCheckpoint(unlocked.id, groupId) : null;
         setCelebration({ checkpoint: unlocked, reward });
+      } else if (data.score === 10) {
+        setPerfectScore({ advance });
       } else {
         router.push('/juego');
       }
@@ -189,6 +301,14 @@ export default function RegistroPage() {
 
   return (
     <>
+      {perfectScore && (
+        <PerfectScoreCelebration
+          advance={perfectScore.advance}
+          charImage={char.image}
+          charColor={char.color}
+          onClose={() => { setPerfectScore(null); router.push('/juego'); }}
+        />
+      )}
       {celebration && (
         <CheckpointCelebration
           checkpoint={celebration.checkpoint}

@@ -13,6 +13,7 @@ type Group = {
   color: string;
   position: string;
   classroom_id: number;
+  pending_message: string | null;
 };
 
 type DayEntry = {
@@ -38,6 +39,12 @@ export default function IrakasleaDashboard() {
     today: string;
   } | null>(null);
   const [loading,     setLoading]     = useState(true);
+
+  // Message state
+  const [msgTarget,   setMsgTarget]   = useState<string>('all');
+  const [msgText,     setMsgText]     = useState('');
+  const [msgSending,  setMsgSending]  = useState(false);
+  const [msgSent,     setMsgSent]     = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -67,6 +74,32 @@ export default function IrakasleaDashboard() {
     }
     load();
   }, []);
+
+  async function sendMessage() {
+    if (!msgText.trim()) return;
+    setMsgSending(true);
+    try {
+      const res = await fetch('/api/teacher/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupId: msgTarget === 'all' ? 'all' : parseInt(msgTarget), message: msgText.trim() }),
+      });
+      if (res.ok) {
+        setMsgSent(true);
+        setMsgText('');
+        setTimeout(() => setMsgSent(false), 3000);
+        // Refresh groups to show pending_message status
+        const cr = await fetch('/api/teacher/classrooms');
+        if (cr.ok) {
+          const { classroom } = await cr.json();
+          const gr = await fetch(`/api/groups?classroom_id=${classroom.id}`);
+          if (gr.ok) setGroups(await gr.json());
+        }
+      }
+    } finally {
+      setMsgSending(false);
+    }
+  }
 
   async function validateEntry(entryId: number) {
     const res = await fetch(`/api/entries/${entryId}/validate`, { method: 'PATCH' });
@@ -192,6 +225,83 @@ export default function IrakasleaDashboard() {
             );
           })}
         </div>
+      </div>
+
+      {/* ── MESSAGES ── */}
+      <div className="card-parchment p-5 space-y-4">
+        <h3 className="island-title text-xl">📢 Mezuak bidali</h3>
+        <p className="text-xs font-semibold" style={{ color: '#6a4020' }}>
+          Mezu bat idatzi eta bidali talde bati edo guztiei. Hurrengo aldian sartzen direnean ikusiko dute.
+        </p>
+
+        <div className="flex flex-wrap gap-3 items-end">
+          {/* Target selector */}
+          <div className="flex-1 min-w-[160px]">
+            <label className="block text-xs font-black uppercase tracking-wide mb-1" style={{ color: '#84572F' }}>
+              Hartzailea
+            </label>
+            <select
+              value={msgTarget}
+              onChange={e => setMsgTarget(e.target.value)}
+              className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none"
+              style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(132,87,47,0.30)', color: '#3d2510' }}
+            >
+              <option value="all">🌍 Talde guztiak</option>
+              {groups.map(g => (
+                <option key={g.id} value={g.id}>
+                  {g.student_name || g.name || `Taldea ${g.id}`}
+                  {g.pending_message ? ' 📬' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Message input */}
+          <div className="flex-[3] min-w-[200px]">
+            <label className="block text-xs font-black uppercase tracking-wide mb-1" style={{ color: '#84572F' }}>
+              Mezua
+            </label>
+            <input
+              type="text"
+              value={msgText}
+              onChange={e => setMsgText(e.target.value.slice(0, 200))}
+              onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
+              placeholder="Idatzi mezu bat..."
+              maxLength={200}
+              className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none"
+              style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(132,87,47,0.30)', color: '#3d2510' }}
+            />
+          </div>
+
+          <button
+            onClick={sendMessage}
+            disabled={msgSending || !msgText.trim()}
+            className="btn-teal py-2 px-5 text-sm flex-shrink-0"
+          >
+            {msgSending ? 'Bidaltzen...' : '📤 Bidali'}
+          </button>
+        </div>
+
+        {msgSent && (
+          <p className="text-sm font-bold" style={{ color: '#27ae60' }}>✓ Mezua bidali da!</p>
+        )}
+
+        {/* Pending messages overview */}
+        {groups.some(g => g.pending_message) && (
+          <div className="space-y-1.5 mt-1">
+            <p className="text-xs font-black uppercase tracking-wide" style={{ color: '#84572F' }}>Irakurri gabeko mezuak</p>
+            {groups.filter(g => g.pending_message).map(g => (
+              <div key={g.id} className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                style={{ background: 'rgba(241,168,5,0.12)', border: '1px solid rgba(241,168,5,0.25)' }}>
+                <span className="text-sm">📬</span>
+                <span className="text-xs font-bold flex-1" style={{ color: '#3d2510' }}>
+                  {g.student_name || g.name || `Taldea ${g.id}`}:
+                  <span className="font-normal ml-1 opacity-75">{g.pending_message}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── RANKING ── */}
