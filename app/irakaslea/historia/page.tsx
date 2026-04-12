@@ -212,7 +212,7 @@ export default function HistoriaPage() {
             <span className="w-20 text-center">Baliozta</span>
           </div>
 
-          <div className="divide-y" style={{ divideColor: 'rgba(146,173,164,0.10)' }}>
+          <div className="divide-y divide-white/5">
             {entries.map(entry => {
               const char = CHARACTERS[entry.character_index] ?? CHARACTERS[0];
               const euskeraCount    = [1,2,3,4,5].filter(k => (entry as Record<string,unknown>)[`class_${k}_euskera`]    as boolean).length;
