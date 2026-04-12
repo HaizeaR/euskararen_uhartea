@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { CHARACTERS } from '@/lib/characters';
 import { CHECKPOINTS, unlockedCheckpoints } from '@/lib/checkpoints';
 import { getGroupRewards } from '@/lib/rewards';
+import { WEEKLY_SCHEDULE } from '@/lib/schedule';
 
 type Group = {
   id: number;
@@ -248,31 +249,36 @@ export default function PerfilPage() {
           Tresna Biltegia
         </p>
         <div className="grid grid-cols-2 gap-3">
-          {CHECKPOINTS.filter(cp => cp.id > 0).map((cp, idx) => {
-            const isUnlocked = unlocked.includes(cp.id);
-            const reward     = groupRewards[idx];
+          {CHECKPOINTS.map((cp) => {
+            // Checkpoint 0 (Hasierako Hondartza) is always unlocked for everyone
+            const isUnlocked = cp.id === 0 || unlocked.includes(cp.id);
+            // reward index matches checkpoint id directly (0=initial, 1-6=checkpoints)
+            const reward     = groupRewards[cp.id];
             return (
               <div
                 key={cp.id}
                 className="flex items-center gap-3 p-3 rounded-2xl transition-all"
                 style={{
                   background: isUnlocked
-                    ? 'linear-gradient(145deg,rgba(241,168,5,0.13),rgba(241,168,5,0.04))'
+                    ? cp.id === 0
+                      ? 'linear-gradient(145deg,rgba(146,173,164,0.18),rgba(146,173,164,0.06))'
+                      : 'linear-gradient(145deg,rgba(241,168,5,0.13),rgba(241,168,5,0.04))'
                     : 'rgba(0,0,0,0.04)',
-                  border: `1px solid ${isUnlocked ? 'rgba(241,168,5,0.30)' : 'rgba(132,87,47,0.12)'}`,
+                  border: `1px solid ${isUnlocked
+                    ? cp.id === 0 ? 'rgba(146,173,164,0.40)' : 'rgba(241,168,5,0.30)'
+                    : 'rgba(132,87,47,0.12)'}`,
                 }}
               >
-                {isUnlocked ? (
+                {isUnlocked && reward ? (
                   <>
-                    <div className="relative flex-shrink-0" style={{ width: 72, height: 72 }}>
-                      <Image
-                        src={reward.image}
-                        alt={reward.name}
-                        fill
-                        className="object-contain"
-                        style={{ filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.22))' }}
-                      />
-                    </div>
+                    <Image
+                      src={reward.image}
+                      alt={reward.name}
+                      width={72}
+                      height={72}
+                      className="object-contain flex-shrink-0"
+                      style={{ filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.22))' }}
+                    />
                     <div className="min-w-0">
                       <p className="font-black text-sm leading-tight" style={{ color: '#3d2510' }}>
                         {reward.name}
@@ -280,6 +286,11 @@ export default function PerfilPage() {
                       <p className="text-xs mt-0.5 opacity-55" style={{ color: '#84572F' }}>
                         {cp.icon} {cp.name}
                       </p>
+                      {cp.id === 0 && (
+                        <p className="text-xs mt-0.5 font-bold" style={{ color: '#92ADA4' }}>
+                          ✓ Hasieratik
+                        </p>
+                      )}
                     </div>
                   </>
                 ) : (
@@ -350,7 +361,7 @@ export default function PerfilPage() {
                 {editId === e.id && (
                   <div className="mt-1 mb-2 px-3 py-3 rounded-xl space-y-2"
                     style={{ background: 'rgba(132,87,47,0.07)', border: '1px solid rgba(132,87,47,0.18)' }}>
-                    {classNames.map((name, i) => (
+                    {(WEEKLY_SCHEDULE[new Date(e.entry_date + 'T12:00:00').getDay()] ?? classNames).map((name, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <span className="text-xs font-semibold w-24 shrink-0" style={{ color: '#84572F' }}>
                           {name}

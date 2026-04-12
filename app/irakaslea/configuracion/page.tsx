@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { WEEKLY_SCHEDULE } from '@/lib/schedule';
 
 const DEFAULT_CLASS_NAMES = [
   'Matematika',
@@ -10,8 +11,7 @@ const DEFAULT_CLASS_NAMES = [
   'Gorputz Hezkuntza',
 ];
 
-const DAY_LABELS = ['Astelehena', 'Asteartea', 'Asteazkena', 'Osteguna', 'Ostirala'];
-const DEFAULT_SCHEDULE: boolean[][] = Array(5).fill(null).map(() => Array(5).fill(true));
+const DAY_NAMES = ['Astelehena', 'Asteartea', 'Asteazkena', 'Osteguna', 'Ostirala'];
 
 type Classroom = {
   id: number;
@@ -19,7 +19,6 @@ type Classroom = {
   code: string;
   map_total: number;
   class_names: string | null;
-  weekly_schedule: string | null;
 };
 
 export default function ConfiguracionPage() {
@@ -38,7 +37,6 @@ export default function ConfiguracionPage() {
   const [name,       setName]       = useState('');
   const [mapTotal,   setMapTotal]   = useState(50);
   const [classNames, setClassNames] = useState<string[]>(DEFAULT_CLASS_NAMES);
-  const [schedule,   setSchedule]   = useState<boolean[][]>(DEFAULT_SCHEDULE);
 
   useEffect(() => {
     async function load() {
@@ -50,7 +48,6 @@ export default function ConfiguracionPage() {
         setName(c.name ?? '');
         setMapTotal(c.map_total ?? 50);
         setClassNames(c.class_names ? JSON.parse(c.class_names) : DEFAULT_CLASS_NAMES);
-        setSchedule(c.weekly_schedule ? JSON.parse(c.weekly_schedule) : DEFAULT_SCHEDULE);
       } finally {
         setLoading(false);
       }
@@ -66,7 +63,7 @@ export default function ConfiguracionPage() {
       const res = await fetch('/api/teacher/classrooms', {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ name, map_total: mapTotal, class_names: classNames, weekly_schedule: schedule }),
+        body:    JSON.stringify({ name, map_total: mapTotal, class_names: classNames }),
       });
       if (res.ok) {
         const { classroom: c } = await res.json();
@@ -230,51 +227,33 @@ export default function ConfiguracionPage() {
           </div>
         </div>
 
-        {/* Weekly schedule */}
+        {/* Weekly schedule — read-only display (hardcoded) */}
         <div className="card-parchment p-5 space-y-3">
           <p className="text-xs font-black uppercase tracking-widest" style={{ color: '#84572F' }}>
-            Ordutegia (asteko ikasgaiak)
+            Ordutegia (finkatuta)
           </p>
           <p className="text-xs opacity-60" style={{ color: '#84572F' }}>
             Ikasleek eguneko ikasgaiak bakarrik ikusiko dituzte erregistroan.
           </p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs border-collapse">
-              <thead>
-                <tr>
-                  <th className="text-left py-1.5 pr-3 font-black" style={{ color: '#84572F' }}></th>
-                  {classNames.map((cn, j) => (
-                    <th key={j} className="px-2 py-1.5 text-center font-black" style={{ color: '#3d2510' }}>
-                      {cn.split(' ')[0]}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {DAY_LABELS.map((day, d) => (
-                  <tr key={d}>
-                    <td className="py-1.5 pr-3 font-semibold" style={{ color: '#6a4020' }}>{day}</td>
-                    {classNames.map((_, s) => (
-                      <td key={s} className="px-2 py-1.5 text-center">
-                        <button
-                          type="button"
-                          onClick={() => setSchedule(prev => prev.map((row, ri) =>
-                            ri === d ? row.map((v, ci) => ci === s ? !v : v) : row
-                          ))}
-                          className="w-6 h-6 rounded-md transition-all"
-                          style={{
-                            background: schedule[d]?.[s] ? 'rgba(39,174,96,0.18)' : 'rgba(132,87,47,0.08)',
-                            border: `1.5px solid ${schedule[d]?.[s] ? 'rgba(39,174,96,0.50)' : 'rgba(132,87,47,0.22)'}`,
-                          }}
-                        >
-                          {schedule[d]?.[s] ? <span style={{ color: '#27ae60', fontSize: 11 }}>✓</span> : null}
-                        </button>
-                      </td>
+          <div className="space-y-1.5">
+            {DAY_NAMES.map((day, d) => {
+              const subjects = WEEKLY_SCHEDULE[d + 1] ?? [];
+              return (
+                <div key={d} className="flex items-start gap-3">
+                  <span className="text-xs font-black w-24 shrink-0 pt-0.5" style={{ color: '#6a4020' }}>
+                    {day}
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {subjects.map((s, i) => (
+                      <span key={i} className="text-xs px-2 py-0.5 rounded-lg font-semibold"
+                        style={{ background: 'rgba(132,87,47,0.10)', color: '#3d2510', border: '1px solid rgba(132,87,47,0.18)' }}>
+                        {s}
+                      </span>
                     ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

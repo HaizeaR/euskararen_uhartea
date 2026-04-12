@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, day_entries, groups, classrooms } from '@/db';
 import { eq } from 'drizzle-orm';
 import { getSessionFromRequest } from '@/lib/auth';
+import { WEEKLY_SCHEDULE } from '@/lib/schedule';
 
 // PATCH /api/entries/[id]
 // Student: can edit own entry only if NOT validated
@@ -36,12 +37,18 @@ export async function PATCH(
     ] as const;
 
     const boolValues: Record<string, boolean> = {};
-    let newScore = 0;
+    let trueCount = 0;
     for (const f of fields) {
       const val = Boolean(body[f]);
       boolValues[f] = val;
-      if (val) newScore++;
+      if (val) trueCount++;
     }
+
+    // Use the schedule for the entry's date to normalize score correctly
+    const entryDow = new Date(entry.entry_date + 'T12:00:00').getDay();
+    const subjects = WEEKLY_SCHEDULE[entryDow] ?? [];
+    const maxPoints = subjects.length > 0 ? subjects.length * 2 : 10;
+    const newScore = Math.round((trueCount / maxPoints) * 10);
     const newAdvance = newScore / 2;
 
     const updatePayload: Record<string, unknown> = { ...boolValues, score: newScore, advance: String(newAdvance) };

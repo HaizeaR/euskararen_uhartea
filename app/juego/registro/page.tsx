@@ -7,16 +7,13 @@ import Image from 'next/image';
 import { CHARACTERS } from '@/lib/characters';
 import { CHECKPOINTS, type Checkpoint } from '@/lib/checkpoints';
 import { getRewardForCheckpoint, type Reward } from '@/lib/rewards';
+import { WEEKLY_SCHEDULE } from '@/lib/schedule';
 
 type ClassData = { euskera: boolean; errespetua: boolean };
 
-const DEFAULT_CLASS_NAMES = [
-  'Matematika',
-  'Hizkuntza',
-  'Natur Zientziak',
-  'Gizarte Zientziak',
-  'Gorputz Hezkuntza',
-];
+// Today's subjects from the hardcoded schedule (0=Sun,1=Mon…5=Fri)
+const todayDow = new Date().getDay();
+const TODAY_SUBJECTS: string[] = WEEKLY_SCHEDULE[todayDow] ?? [];
 
 function batteryColor(score: number) {
   if (score >= 8) return '#27ae60';
@@ -223,45 +220,25 @@ function CheckpointCelebration({
 /* ── Page ─────────────────────────────────────────────────────── */
 export default function RegistroPage() {
   const router = useRouter();
-  const [classes,     setClasses]     = useState<ClassData[]>(Array(5).fill(null).map(() => ({ euskera: false, errespetua: false })));
-  const [charIdx,     setCharIdx]     = useState(0);
-  const [currentPos,  setCurrentPos]  = useState(0);
-  const [classNames,  setClassNames]  = useState<string[]>(DEFAULT_CLASS_NAMES);
-  const [groupId,       setGroupId]       = useState<number | null>(null);
-  const [todayIndices,  setTodayIndices]  = useState<number[]>([0,1,2,3,4]); // which subjects are shown today
-  const [loading,       setLoading]       = useState(false);
-  const [error,       setError]       = useState('');
-  const [celebration,  setCelebration]  = useState<{ checkpoint: Checkpoint; reward: Reward | null } | null>(null);
+  const n = TODAY_SUBJECTS.length || 5;
+  const [classes,      setClasses]     = useState<ClassData[]>(Array(n).fill(null).map(() => ({ euskera: false, errespetua: false })));
+  const [charIdx,      setCharIdx]     = useState(0);
+  const [currentPos,   setCurrentPos]  = useState(0);
+  const [groupId,      setGroupId]     = useState<number | null>(null);
+  const [loading,      setLoading]     = useState(false);
+  const [error,        setError]       = useState('');
+  const [celebration,  setCelebration] = useState<{ checkpoint: Checkpoint; reward: Reward | null } | null>(null);
   const [perfectScore, setPerfectScore] = useState<{ advance: number } | null>(null);
 
   useEffect(() => {
     fetch('/api/session').then(r => r.json()).then(s => {
       if (s.groupId) {
-        Promise.all([
-          fetch(`/api/groups?classroom_id=${s.classroomId}`).then(r => r.json()),
-          fetch('/api/teacher/classrooms').then(r => r.ok ? r.json() : null),
-        ]).then(([gs, classroomData]) => {
+        fetch(`/api/groups?classroom_id=${s.classroomId}`).then(r => r.json()).then(gs => {
           const g = gs.find((x: { id: number }) => x.id === s.groupId);
           if (g) {
             setCharIdx(g.character_index);
             setCurrentPos(parseFloat(g.position));
             setGroupId(g.id);
-          }
-          if (classroomData?.classroom?.class_names) {
-            try { setClassNames(JSON.parse(classroomData.classroom.class_names)); } catch {}
-          }
-          if (classroomData?.classroom?.weekly_schedule) {
-            try {
-              const schedule: boolean[][] = JSON.parse(classroomData.classroom.weekly_schedule);
-              const dow = new Date().getDay(); // 0=Sun,1=Mon…6=Sat
-              if (dow >= 1 && dow <= 5) {
-                const todayRow = schedule[dow - 1]; // 0=Mon…4=Fri
-                if (Array.isArray(todayRow)) {
-                  const indices = todayRow.map((on, i) => on ? i : -1).filter(i => i >= 0);
-                  if (indices.length > 0) setTodayIndices(indices);
-                }
-              }
-            } catch {}
           }
         });
       }
@@ -272,7 +249,9 @@ export default function RegistroPage() {
     setClasses(prev => prev.map((c, i) => i === idx ? { ...c, [field]: !c[field] } : c));
   }
 
-  const totalScore = classes.reduce((s, c) => s + (c.euskera ? 1 : 0) + (c.errespetua ? 1 : 0), 0);
+  const trueCount  = classes.reduce((s, c) => s + (c.euskera ? 1 : 0) + (c.errespetua ? 1 : 0), 0);
+  const maxPoints  = n * 2;
+  const totalScore = Math.round((trueCount / maxPoints) * 10);
   const advance    = totalScore / 2;
   const pct        = (totalScore / 10) * 100;
   const bColor     = batteryColor(totalScore);
@@ -400,45 +379,71 @@ export default function RegistroPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-2.5">
-          {classNames.map((name, i) => todayIndices.includes(i) ? (
-            <div key={i} className="card-dark px-4 py-3 rounded-2xl">
-              <p className="text-xs font-bold uppercase tracking-widest mb-2.5" style={{ color: '#92ADA4' }}>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {TODAY_SUBJECTS.length === 0 ? (
+            <p className="text-center py-8 text-sm font-bold opacity-60" style={{ color: 'var(--parchment)' }}>
+              Gaur ez dago klaseen erregistrorik.
+            </p>
+          ) : TODAY_SUBJECTS.map((name, i) => (
+            <div key={i} className="card-dark px-4 pt-3 pb-4 rounded-2xl">
+              <p className="text-sm font-black uppercase tracking-widest mb-3" style={{ color: '#92ADA4' }}>
                 {i + 1}. {name}
               </p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
+                {/* Euskera button */}
                 <button
                   type="button"
                   onClick={() => toggleClass(i, 'euskera')}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl border transition-all text-left"
+                  className="flex flex-col items-center gap-1.5 py-4 rounded-2xl border-2 transition-all active:scale-95"
                   style={{
-                    borderColor: classes[i].euskera ? 'rgba(100,185,140,0.60)' : 'rgba(146,173,164,0.18)',
-                    background:  classes[i].euskera ? 'rgba(100,185,140,0.12)' : 'rgba(0,0,0,0.15)',
-                    color:       classes[i].euskera ? '#7edaaa' : 'rgba(237,213,192,0.45)',
+                    borderColor: classes[i].euskera ? '#7edaaa' : 'rgba(146,173,164,0.20)',
+                    background:  classes[i].euskera ? 'rgba(100,185,140,0.18)' : 'rgba(0,0,0,0.18)',
                   }}
                 >
-                  <span className="text-base">🗣️</span>
-                  <span className="text-xs font-semibold leading-tight flex-1">Euskaraz aritu naiz</span>
-                  {classes[i].euskera && <span style={{ color: '#7edaaa', fontSize: 11 }}>✓</span>}
+                  <span className="text-3xl leading-none">{classes[i].euskera ? '🗣️' : '💬'}</span>
+                  <span className="text-xs font-black leading-tight text-center px-1"
+                    style={{ color: classes[i].euskera ? '#7edaaa' : 'rgba(237,213,192,0.40)' }}>
+                    Euskaraz!
+                  </span>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center"
+                    style={{
+                      background: classes[i].euskera ? '#7edaaa' : 'rgba(255,255,255,0.08)',
+                      border: classes[i].euskera ? 'none' : '1.5px solid rgba(255,255,255,0.15)',
+                    }}>
+                    {classes[i].euskera
+                      ? <span className="text-xs font-black" style={{ color: '#0d2e1a' }}>✓</span>
+                      : <span className="text-xs opacity-30" style={{ color: '#fff' }}>○</span>}
+                  </div>
                 </button>
 
+                {/* Errespetua button */}
                 <button
                   type="button"
                   onClick={() => toggleClass(i, 'errespetua')}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl border transition-all text-left"
+                  className="flex flex-col items-center gap-1.5 py-4 rounded-2xl border-2 transition-all active:scale-95"
                   style={{
-                    borderColor: classes[i].errespetua ? 'rgba(241,168,5,0.50)' : 'rgba(146,173,164,0.18)',
-                    background:  classes[i].errespetua ? 'rgba(241,168,5,0.10)' : 'rgba(0,0,0,0.15)',
-                    color:       classes[i].errespetua ? '#f5cc50' : 'rgba(237,213,192,0.45)',
+                    borderColor: classes[i].errespetua ? '#f5cc50' : 'rgba(146,173,164,0.20)',
+                    background:  classes[i].errespetua ? 'rgba(241,168,5,0.14)' : 'rgba(0,0,0,0.18)',
                   }}
                 >
-                  <span className="text-base">🤝</span>
-                  <span className="text-xs font-semibold leading-tight flex-1">Errespetuz jokatu dugu!</span>
-                  {classes[i].errespetua && <span style={{ color: '#f5cc50', fontSize: 11 }}>✓</span>}
+                  <span className="text-3xl leading-none">{classes[i].errespetua ? '🤝' : '👐'}</span>
+                  <span className="text-xs font-black leading-tight text-center px-1"
+                    style={{ color: classes[i].errespetua ? '#f5cc50' : 'rgba(237,213,192,0.40)' }}>
+                    Errespetua!
+                  </span>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center"
+                    style={{
+                      background: classes[i].errespetua ? '#f5cc50' : 'rgba(255,255,255,0.08)',
+                      border: classes[i].errespetua ? 'none' : '1.5px solid rgba(255,255,255,0.15)',
+                    }}>
+                    {classes[i].errespetua
+                      ? <span className="text-xs font-black" style={{ color: '#3d2510' }}>✓</span>
+                      : <span className="text-xs opacity-30" style={{ color: '#fff' }}>○</span>}
+                  </div>
                 </button>
               </div>
             </div>
-          ) : null)}
+          ))}
 
           {error && (
             <p className="text-sm text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(180,40,20,0.12)', color: '#e05040', border: '1px solid rgba(180,40,20,0.20)' }}>

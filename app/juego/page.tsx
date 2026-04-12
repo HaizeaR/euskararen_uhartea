@@ -114,10 +114,14 @@ function WelcomeReward({ group, onDismiss }: {
         {reward && (
           <div className="flex flex-col items-center gap-2 p-4 rounded-2xl mb-5"
             style={{ background: `${char.color}15`, border: `1px solid ${char.color}30` }}>
-            <div className="relative" style={{ width: 100, height: 100 }}>
-              <Image src={reward.image} alt={reward.name} fill className="object-contain animate-bounce"
-                style={{ filter: `drop-shadow(0 4px 12px ${char.color}66)` }} />
-            </div>
+            <Image
+              src={reward.image}
+              alt={reward.name}
+              width={100}
+              height={100}
+              className="object-contain animate-bounce"
+              style={{ filter: `drop-shadow(0 4px 12px ${char.color}66)` }}
+            />
             <p className="font-black text-base" style={{ color: '#fff' }}>{reward.name}</p>
             <p className="text-xs font-semibold" style={{ color: char.color }}>Lehen tresna lortu duzu!</p>
           </div>

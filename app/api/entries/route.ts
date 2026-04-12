@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, day_entries, groups } from '@/db';
 import { eq, and } from 'drizzle-orm';
 import { getSessionFromRequest } from '@/lib/auth';
+import { getTodaySubjects } from '@/lib/schedule';
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,13 +39,16 @@ export async function POST(req: NextRequest) {
     ] as const;
 
     const boolValues: Record<string, boolean> = {};
-    let score = 0;
+    let trueCount = 0;
     for (const field of fields) {
       const val = Boolean(body[field]);
       boolValues[field] = val;
-      if (val) score++;
+      if (val) trueCount++;
     }
 
+    const subjects = getTodaySubjects();
+    const maxPoints = subjects.length > 0 ? subjects.length * 2 : 10;
+    const score = Math.round((trueCount / maxPoints) * 10);
     const advance = score / 2;
 
     const [entry] = await db
