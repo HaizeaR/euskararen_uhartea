@@ -87,7 +87,7 @@ function CheckpointCelebration({
             className="flex flex-col items-center gap-2 p-4 rounded-2xl mb-5"
             style={{ background: 'rgba(241,168,5,0.12)', border: '1px solid rgba(241,168,5,0.30)' }}
           >
-            <div className="relative" style={{ width: 80, height: 80 }}>
+            <div className="relative" style={{ width: 110, height: 110 }}>
               <Image
                 src={reward.image}
                 alt={reward.name}

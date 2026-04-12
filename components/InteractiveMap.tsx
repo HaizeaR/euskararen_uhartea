@@ -243,7 +243,7 @@ export default function InteractiveMap({ groups, highlightGroupId }: Props) {
 
                 {/* Reward badge — tool image for group, ? if locked */}
                 {cp.id > 0 && (() => {
-                  const badgeSz = Math.max(20, mapSize.w * 0.032);
+                  const badgeSz = Math.max(34, mapSize.w * 0.062);
                   if (isUnlocked) {
                     const reward = focusGroup ? getRewardForCheckpoint(cp.id, focusGroup.id) : null;
                     return reward ? (
@@ -417,7 +417,7 @@ export default function InteractiveMap({ groups, highlightGroupId }: Props) {
                     <div className="flex items-center gap-2 px-3 py-2 rounded-xl flex-1"
                       style={{ background: 'rgba(241,168,5,0.12)', border: '1px solid rgba(241,168,5,0.30)' }}>
                       <img src={reward.image} alt={reward.name} draggable={false}
-                        style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                        style={{ width: 56, height: 56, objectFit: 'contain' }} />
                       <div>
                         <p className="text-xs font-black" style={{ color: '#5a3218' }}>{reward.name}</p>
                         <p className="text-xs opacity-60" style={{ color: '#84572F' }}>Tresna lortu duzu!</p>

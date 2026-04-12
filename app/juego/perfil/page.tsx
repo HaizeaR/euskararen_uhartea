@@ -201,56 +201,58 @@ export default function PerfilPage() {
         <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: '#92ADA4' }}>
           Tresna Inbentarioa
         </p>
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 gap-3">
           {CHECKPOINTS.filter(cp => cp.id > 0).map((cp, idx) => {
             const isUnlocked = unlocked.includes(cp.id);
             const reward     = groupRewards[idx];
             return (
               <div
                 key={cp.id}
-                className="flex flex-col items-center gap-1.5 p-3 rounded-2xl text-center transition-all relative"
+                className="flex items-center gap-3 p-3 rounded-2xl transition-all"
                 style={{
                   background: isUnlocked
-                    ? 'linear-gradient(145deg,rgba(241,168,5,0.12),rgba(241,168,5,0.05))'
+                    ? 'linear-gradient(145deg,rgba(241,168,5,0.13),rgba(241,168,5,0.04))'
                     : 'rgba(0,0,0,0.04)',
-                  border: `1px solid ${isUnlocked ? 'rgba(241,168,5,0.28)' : 'rgba(132,87,47,0.12)'}`,
+                  border: `1px solid ${isUnlocked ? 'rgba(241,168,5,0.30)' : 'rgba(132,87,47,0.12)'}`,
                 }}
               >
                 {isUnlocked ? (
                   <>
-                    {/* Tool image */}
-                    <div className="relative" style={{ width: 52, height: 52 }}>
+                    <div className="relative flex-shrink-0" style={{ width: 72, height: 72 }}>
                       <Image
                         src={reward.image}
                         alt={reward.name}
                         fill
                         className="object-contain"
-                        style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.18))' }}
+                        style={{ filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.22))' }}
                       />
                     </div>
-                    <span className="text-xs font-bold leading-tight" style={{ color: '#5a3218', fontSize: 10 }}>
-                      {reward.name}
-                    </span>
-                    {/* Checkpoint name */}
-                    <span className="text-xs leading-tight opacity-50" style={{ color: '#84572F', fontSize: 9 }}>
-                      {cp.icon} {cp.name.split(' ')[0]}
-                    </span>
+                    <div className="min-w-0">
+                      <p className="font-black text-sm leading-tight" style={{ color: '#3d2510' }}>
+                        {reward.name}
+                      </p>
+                      <p className="text-xs mt-0.5 opacity-55" style={{ color: '#84572F' }}>
+                        {cp.icon} {cp.name}
+                      </p>
+                    </div>
                   </>
                 ) : (
                   <>
-                    {/* Mystery box */}
                     <div
-                      className="flex items-center justify-center rounded-xl"
-                      style={{ width: 52, height: 52, background: 'rgba(132,87,47,0.10)', border: '1.5px dashed rgba(132,87,47,0.25)' }}
+                      className="flex items-center justify-center rounded-xl flex-shrink-0"
+                      style={{ width: 72, height: 72, background: 'rgba(132,87,47,0.08)', border: '2px dashed rgba(132,87,47,0.22)' }}
                     >
-                      <span style={{ fontSize: 26, filter: 'grayscale(1)', opacity: 0.35 }}>❓</span>
+                      <span style={{ fontSize: 34, opacity: 0.30 }}>❓</span>
                     </div>
-                    <span className="text-xs font-semibold opacity-40" style={{ color: '#3d2510', fontSize: 10 }}>
-                      Lorteke
-                    </span>
-                    <span className="text-xs opacity-30" style={{ color: '#84572F', fontSize: 9 }}>
-                      {cp.requiredPos} pos. behar
-                    </span>
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm opacity-35" style={{ color: '#3d2510' }}>Lorteke</p>
+                      <p className="text-xs mt-0.5 opacity-30" style={{ color: '#84572F' }}>
+                        {cp.icon} {cp.name}
+                      </p>
+                      <p className="text-xs mt-1 opacity-25" style={{ color: '#84572F' }}>
+                        {cp.requiredPos} pos. behar
+                      </p>
+                    </div>
                   </>
                 )}
               </div>
