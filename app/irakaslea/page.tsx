@@ -1,11 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { CHARACTER_NAMES, CHARACTERS } from '@/lib/characters';
-
-const MapCanvas = dynamic(() => import('@/components/MapCanvas'), { ssr: false });
 
 type Group = {
   id: number;
@@ -95,14 +92,11 @@ export default function IrakasleaDashboard() {
   return (
     <div className="space-y-8">
 
-      {/* ── MAP ── */}
-      <div>
-        <h2 className="island-title text-2xl mb-3">Dashboard</h2>
-        <MapCanvas groups={groups} mapTotal={50} />
-      </div>
-
       {/* ── TODAY'S COMPLETION ── */}
       <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="island-title text-2xl">Dashboard</h2>
+        </div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="island-title text-xl">Gaurko Egoera</h3>
           <span className="text-sm font-semibold" style={{ color: '#4a7068' }}>
