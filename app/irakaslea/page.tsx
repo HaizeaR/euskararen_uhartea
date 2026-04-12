@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { CHARACTER_NAMES, CHARACTERS } from '@/lib/characters';
+import { WEEKLY_SCHEDULE } from '@/lib/schedule';
 
 type Group = {
   id: number;
@@ -30,7 +31,6 @@ type DayEntry = {
   class_5_euskera: boolean; class_5_errespetua: boolean;
 };
 
-const CLASS_NAMES = ['Matematika', 'Hizkuntza', 'Nat. Zientziak', 'Giz. Zientziak', 'Gorputz Hez.'];
 
 export default function IrakasleaDashboard() {
   const [groups,      setGroups]      = useState<Group[]>([]);
@@ -183,26 +183,32 @@ export default function IrakasleaDashboard() {
                     </div>
 
                     {/* Class breakdown */}
-                    <div className="grid grid-cols-5 gap-1 mb-2">
-                      {CLASS_NAMES.map((cls, i) => {
-                        const k = i + 1;
-                        const eu = entry[`class_${k}_euskera` as keyof DayEntry] as boolean;
-                        const er = entry[`class_${k}_errespetua` as keyof DayEntry] as boolean;
-                        return (
-                          <div key={i} className="text-center">
-                            <div className="text-amber-700 text-xs mb-1 truncate" title={cls}>
-                              {cls.split(' ')[0]}
-                            </div>
-                            <div className={`text-xs rounded px-1 py-0.5 ${eu ? 'bg-teal-900 text-teal-300' : 'bg-gray-900 text-gray-600'}`}>
-                              🗣️
-                            </div>
-                            <div className={`text-xs rounded px-1 py-0.5 mt-0.5 ${er ? 'bg-amber-900 text-amber-300' : 'bg-gray-900 text-gray-600'}`}>
-                              🤝
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    {(() => {
+                      const entryDow = new Date(entry.entry_date + 'T12:00:00').getDay();
+                      const daySubjects = WEEKLY_SCHEDULE[entryDow] ?? [];
+                      return (
+                        <div className="grid gap-1 mb-2" style={{ gridTemplateColumns: `repeat(${daySubjects.length}, 1fr)` }}>
+                          {daySubjects.map((cls: string, i: number) => {
+                            const k = i + 1;
+                            const eu = entry[`class_${k}_euskera` as keyof DayEntry] as boolean;
+                            const er = entry[`class_${k}_errespetua` as keyof DayEntry] as boolean;
+                            return (
+                              <div key={i} className="text-center">
+                                <div className="text-amber-700 text-xs mb-1 truncate" title={cls}>
+                                  {cls.split(' ')[0]}
+                                </div>
+                                <div className={`text-xs rounded px-1 py-0.5 ${eu ? 'bg-teal-900 text-teal-300' : 'bg-gray-900 text-gray-600'}`}>
+                                  🗣️
+                                </div>
+                                <div className={`text-xs rounded px-1 py-0.5 mt-0.5 ${er ? 'bg-amber-900 text-amber-300' : 'bg-gray-900 text-gray-600'}`}>
+                                  🤝
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
 
                     {/* Validate */}
                     {!entry.validated_by_teacher ? (

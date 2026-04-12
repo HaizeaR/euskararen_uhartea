@@ -227,22 +227,32 @@ export default function RegistroPage() {
   const [groupId,      setGroupId]     = useState<number | null>(null);
   const [loading,      setLoading]     = useState(false);
   const [error,        setError]       = useState('');
-  const [celebration,  setCelebration] = useState<{ checkpoint: Checkpoint; reward: Reward | null } | null>(null);
-  const [perfectScore, setPerfectScore] = useState<{ advance: number } | null>(null);
+  const [celebration,   setCelebration]  = useState<{ checkpoint: Checkpoint; reward: Reward | null } | null>(null);
+  const [perfectScore,  setPerfectScore] = useState<{ advance: number } | null>(null);
+  const [alreadyDone,   setAlreadyDone]  = useState(false);
+  const [todayScore,    setTodayScore]   = useState<number | null>(null);
 
   useEffect(() => {
-    fetch('/api/session').then(r => r.json()).then(s => {
-      if (s.groupId) {
-        fetch(`/api/groups?classroom_id=${s.classroomId}`).then(r => r.json()).then(gs => {
-          const g = gs.find((x: { id: number }) => x.id === s.groupId);
-          if (g) {
-            setCharIdx(g.character_index);
-            setCurrentPos(parseFloat(g.position));
-            setGroupId(g.id);
-          }
-        });
+    async function load() {
+      const s = await fetch('/api/session').then(r => r.json());
+      if (!s.groupId) return;
+      const gs = await fetch(`/api/groups?classroom_id=${s.classroomId}`).then(r => r.json());
+      const g = gs.find((x: { id: number }) => x.id === s.groupId);
+      if (g) {
+        setCharIdx(g.character_index);
+        setCurrentPos(parseFloat(g.position));
+        setGroupId(g.id);
+        // Check if already registered today
+        const today = new Date().toISOString().split('T')[0];
+        const entries = await fetch(`/api/entries?group_id=${g.id}`).then(r => r.json());
+        const todayEntry = entries.find((e: { entry_date: string; score: number }) => e.entry_date === today);
+        if (todayEntry) {
+          setAlreadyDone(true);
+          setTodayScore(todayEntry.score);
+        }
       }
-    });
+    }
+    load();
   }, []);
 
   function toggleClass(idx: number, field: 'euskera' | 'errespetua') {
@@ -316,8 +326,36 @@ export default function RegistroPage() {
           <h1 className="island-title text-xl">Gaur Erregistratu</h1>
         </header>
 
+        {/* ── ALREADY REGISTERED ── */}
+        {alreadyDone && (
+          <div
+            className="rounded-3xl p-8 text-center mb-5"
+            style={{
+              background: 'rgba(39,174,96,0.10)',
+              border: '1.5px solid rgba(39,174,96,0.35)',
+            }}
+          >
+            <div className="text-6xl mb-4">✅</div>
+            <p className="font-black text-2xl mb-2" style={{ color: '#27ae60', fontFamily: 'Rubik, sans-serif' }}>
+              Gaur dagoeneko erregistratuta zaude!
+            </p>
+            {todayScore !== null && (
+              <p className="text-base font-bold mb-4" style={{ color: 'rgba(255,255,255,0.60)' }}>
+                Puntua: {todayScore}/10
+              </p>
+            )}
+            <Link
+              href="/juego"
+              className="inline-block px-6 py-3 rounded-2xl font-black text-base text-white"
+              style={{ background: 'linear-gradient(135deg, rgba(39,174,96,0.80), rgba(39,174,96,0.50))' }}
+            >
+              Itzuli ←
+            </Link>
+          </div>
+        )}
+
         {/* ── WEEKEND BLOCK ── */}
-        {(todayDow === 0 || todayDow === 6) && (
+        {!alreadyDone && (todayDow === 0 || todayDow === 6) && (
           <div
             className="rounded-3xl p-8 text-center mb-5"
             style={{
@@ -342,8 +380,9 @@ export default function RegistroPage() {
           </div>
         )}
 
-        {/* ── MAIN CONTENT (weekdays only) ── */}
-        {todayDow !== 0 && todayDow !== 6 && (<>
+
+        {/* ── MAIN CONTENT (weekdays only, not already done) ── */}
+        {!alreadyDone && todayDow !== 0 && todayDow !== 6 && (<>
 
         {/* ── CHARACTER + BATTERY ── */}
         <div
@@ -374,7 +413,7 @@ export default function RegistroPage() {
           <div className="flex-1">
             <div className="flex justify-between items-baseline mb-1">
               <span className="text-xs font-bold uppercase tracking-wide" style={{ color: '#92ADA4' }}>Energia</span>
-              <span className="font-black text-lg" style={{ color: bColor }}>{totalScore}/10</span>
+              <span key={totalScore} className="font-black text-lg anim-score-pop" style={{ color: bColor }}>{totalScore}/10</span>
             </div>
 
             {/* Battery bar */}
@@ -382,7 +421,14 @@ export default function RegistroPage() {
               style={{ background: 'rgba(0,0,0,0.22)', border: '1px solid rgba(200,160,60,0.25)' }}>
               <div
                 className="h-full transition-all duration-300"
-                style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${bColor}88, ${bColor})` }}
+                style={{
+                  width: `${pct}%`,
+                  background: totalScore > 0
+                    ? `linear-gradient(90deg, ${bColor}88, ${bColor} 40%, rgba(255,255,255,0.55) 55%, ${bColor} 70%, ${bColor}88)`
+                    : `linear-gradient(90deg, ${bColor}88, ${bColor})`,
+                  backgroundSize: totalScore > 0 ? '200% 100%' : '100% 100%',
+                  animation: totalScore > 0 ? 'shimmer-bar 1.8s linear infinite' : 'none',
+                }}
               />
               {[2,4,6,8].map(n => (
                 <div key={n} className="absolute top-0 bottom-0 w-px"
@@ -461,7 +507,7 @@ export default function RegistroPage() {
                       border: classes[i].euskera ? 'none' : '1.5px solid rgba(255,255,255,0.15)',
                     }}>
                     {classes[i].euskera
-                      ? <span className="text-xs font-black" style={{ color: '#0d2e1a' }}>✓</span>
+                      ? <span className="text-xs font-black anim-bounce-in" style={{ color: '#0d2e1a' }}>✓</span>
                       : <span className="text-xs opacity-30" style={{ color: '#fff' }}>○</span>}
                   </div>
                 </button>
@@ -487,7 +533,7 @@ export default function RegistroPage() {
                       border: classes[i].errespetua ? 'none' : '1.5px solid rgba(255,255,255,0.15)',
                     }}>
                     {classes[i].errespetua
-                      ? <span className="text-xs font-black" style={{ color: '#3d2510' }}>✓</span>
+                      ? <span className="text-xs font-black anim-bounce-in" style={{ color: '#3d2510' }}>✓</span>
                       : <span className="text-xs opacity-30" style={{ color: '#fff' }}>○</span>}
                   </div>
                 </button>

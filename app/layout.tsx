@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <p
           className="fixed bottom-2 right-3 text-xs pointer-events-none select-none"
-          style={{ color: 'rgba(132,87,47,0.28)', fontFamily: 'var(--font-body)', letterSpacing: '0.04em' }}
+          style={{ color: 'rgba(132,87,47,0.45)', fontFamily: 'var(--font-body)', letterSpacing: '0.04em' }}
         >
           Eder Fernandez eta Haizea Rodriguez
         </p>

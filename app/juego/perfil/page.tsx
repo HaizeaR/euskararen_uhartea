@@ -37,17 +37,25 @@ function scoreColor(s: number) {
   return '#e05040';
 }
 
-/** Consecutive days ending today */
+function prevSchoolDay(d: Date): Date {
+  const prev = new Date(d);
+  do { prev.setDate(prev.getDate() - 1); } while (prev.getDay() === 0 || prev.getDay() === 6);
+  return prev;
+}
+
+/** Consecutive school days ending on the last school day */
 function calcStreak(entries: DayEntry[]): number {
   const sorted = [...entries].sort((a, b) => b.entry_date.localeCompare(a.entry_date));
   if (!sorted.length) return 0;
   let streak = 0;
-  const d = new Date();
+  // Start from today, but if it's a weekend rewind to Friday
+  let d = new Date();
+  while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
   for (const e of sorted) {
     const expected = d.toISOString().split('T')[0];
     if (e.entry_date === expected) {
       streak++;
-      d.setDate(d.getDate() - 1);
+      d = prevSchoolDay(d);
     } else {
       break;
     }

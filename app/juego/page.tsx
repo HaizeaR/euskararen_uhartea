@@ -493,7 +493,7 @@ export default function JuegoPage() {
             ) : (
               <Link
                 href="/juego/registro"
-                className="rounded-2xl p-5 flex items-center justify-between transition-all hover:scale-[1.01] active:scale-[0.99]"
+                className="rounded-2xl p-5 flex items-center justify-between transition-all hover:scale-[1.02] active:scale-[0.98] anim-action-pulse"
                 style={{
                   background: `linear-gradient(135deg, ${c1(0.50)}, ${c1(0.28)})`,
                   border: `1.5px solid ${c1(0.55)}`,
