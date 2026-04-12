@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CHARACTERS } from '@/lib/characters';
 import { CHECKPOINTS, type Checkpoint } from '@/lib/checkpoints';
+import { getRewardForCheckpoint, type Reward } from '@/lib/rewards';
 
 type ClassData = { euskera: boolean; errespetua: boolean };
 
@@ -27,9 +28,11 @@ function batteryColor(score: number) {
 /* ── Checkpoint celebration overlay ─────────────────────────── */
 function CheckpointCelebration({
   checkpoint,
+  reward,
   onClose,
 }: {
   checkpoint: Checkpoint;
+  reward: Reward | null;
   onClose: () => void;
 }) {
   return (
@@ -56,41 +59,51 @@ function CheckpointCelebration({
       ))}
 
       <div
-        className="relative rounded-3xl p-8 max-w-xs w-full text-center shadow-2xl"
+        className="relative rounded-3xl p-7 max-w-xs w-full text-center shadow-2xl"
         style={{
           background: 'linear-gradient(160deg,#faf3e8,#EDD5C0)',
           border: '1px solid rgba(132,87,47,0.25)',
         }}
       >
-        {/* Big icon */}
-        <div className="text-7xl mb-3 animate-bounce">{checkpoint.icon}</div>
+        {/* Location icon */}
+        <div className="text-5xl mb-2">{checkpoint.icon}</div>
 
         <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: '#92ADA4' }}>
           Leku berria desblokeatu duzu!
         </p>
         <h2
-          className="text-2xl font-black mb-2 leading-tight"
+          className="text-xl font-black mb-2 leading-tight"
           style={{ fontFamily: 'Rubik, var(--font-display), sans-serif', color: '#3d2510' }}
         >
           {checkpoint.name}
         </h2>
-        <p className="text-sm leading-relaxed mb-5" style={{ color: '#6a4020' }}>
+        <p className="text-sm leading-relaxed mb-4" style={{ color: '#6a4020' }}>
           {checkpoint.description}
         </p>
 
-        {/* Reward badge */}
-        <div
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-black mb-6"
-          style={{ background: 'rgba(241,168,5,0.15)', border: '1px solid rgba(241,168,5,0.40)', color: '#7a5000' }}
-        >
-          <span className="text-xl">{checkpoint.reward}</span>
-          Saria lortu duzu!
-        </div>
+        {/* Tool reward */}
+        {reward && (
+          <div
+            className="flex flex-col items-center gap-2 p-4 rounded-2xl mb-5"
+            style={{ background: 'rgba(241,168,5,0.12)', border: '1px solid rgba(241,168,5,0.30)' }}
+          >
+            <div className="relative" style={{ width: 80, height: 80 }}>
+              <Image
+                src={reward.image}
+                alt={reward.name}
+                fill
+                className="object-contain animate-bounce"
+                style={{ filter: 'drop-shadow(0 4px 12px rgba(241,168,5,0.40))' }}
+              />
+            </div>
+            <p className="font-black text-base" style={{ color: '#5a3218' }}>{reward.name}</p>
+            <p className="text-xs font-semibold" style={{ color: '#84572F' }}>
+              ¡Tresna berria lortu duzu!
+            </p>
+          </div>
+        )}
 
-        <button
-          onClick={onClose}
-          className="btn-bronze w-full text-base py-3"
-        >
+        <button onClick={onClose} className="btn-bronze w-full text-base py-3">
           Aurrera! →
         </button>
       </div>
@@ -104,9 +117,10 @@ export default function RegistroPage() {
   const [classes,     setClasses]     = useState<ClassData[]>(Array(5).fill(null).map(() => ({ euskera: false, errespetua: false })));
   const [charIdx,     setCharIdx]     = useState(0);
   const [currentPos,  setCurrentPos]  = useState(0);
+  const [groupId,     setGroupId]     = useState<number | null>(null);
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState('');
-  const [celebration, setCelebration] = useState<Checkpoint | null>(null);
+  const [celebration, setCelebration] = useState<{ checkpoint: Checkpoint; reward: Reward | null } | null>(null);
 
   useEffect(() => {
     fetch('/api/session').then(r => r.json()).then(s => {
@@ -118,6 +132,7 @@ export default function RegistroPage() {
             if (g) {
               setCharIdx(g.character_index);
               setCurrentPos(parseFloat(g.position));
+              setGroupId(g.id);
             }
           });
       }
@@ -158,7 +173,8 @@ export default function RegistroPage() {
         cp => cp.requiredPos > 0 && cp.requiredPos > prevPos && cp.requiredPos <= newPos
       );
       if (unlocked) {
-        setCelebration(unlocked);
+        const reward = groupId ? getRewardForCheckpoint(unlocked.id, groupId) : null;
+        setCelebration({ checkpoint: unlocked, reward });
       } else {
         router.push('/juego');
       }
@@ -170,7 +186,8 @@ export default function RegistroPage() {
     <>
       {celebration && (
         <CheckpointCelebration
-          checkpoint={celebration}
+          checkpoint={celebration.checkpoint}
+          reward={celebration.reward}
           onClose={() => { setCelebration(null); router.push('/juego'); }}
         />
       )}

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { CHARACTERS } from '@/lib/characters';
 import { CHECKPOINTS, getPathPosition, unlockedCheckpoints, type Checkpoint } from '@/lib/checkpoints';
+import { getRewardForCheckpoint } from '@/lib/rewards';
 
 type Group = {
   id: number;
@@ -240,21 +241,42 @@ export default function InteractiveMap({ groups, highlightGroupId }: Props) {
               >
                 {cp.icon}
 
-                {/* Reward badge */}
-                {isUnlocked && cp.id > 0 && (
-                  <span
-                    className="absolute -top-1 -right-1 flex items-center justify-center rounded-full"
-                    style={{
-                      width: mapSize.w * 0.028, height: mapSize.w * 0.028,
-                      minWidth: 18, minHeight: 18,
-                      background: '#27ae60',
-                      fontSize: mapSize.w * 0.016,
-                      border: '1.5px solid #1a6035',
-                    }}
-                  >
-                    {cp.reward}
-                  </span>
-                )}
+                {/* Reward badge — tool image for group, ? if locked */}
+                {cp.id > 0 && (() => {
+                  const badgeSz = Math.max(20, mapSize.w * 0.032);
+                  if (isUnlocked) {
+                    const reward = focusGroup ? getRewardForCheckpoint(cp.id, focusGroup.id) : null;
+                    return reward ? (
+                      <span
+                        className="absolute -top-1 -right-1 flex items-center justify-center rounded-full overflow-hidden"
+                        style={{
+                          width: badgeSz, height: badgeSz,
+                          background: 'rgba(241,168,5,0.92)',
+                          border: '1.5px solid rgba(241,168,5,0.60)',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.35)',
+                        }}
+                      >
+                        <img src={reward.image} alt={reward.name} draggable={false}
+                          style={{ width: '78%', height: '78%', objectFit: 'contain' }} />
+                      </span>
+                    ) : null;
+                  } else {
+                    return (
+                      <span
+                        className="absolute -top-1 -right-1 flex items-center justify-center rounded-full"
+                        style={{
+                          width: badgeSz, height: badgeSz,
+                          background: 'rgba(40,25,10,0.70)',
+                          border: '1px solid rgba(80,50,20,0.4)',
+                          fontSize: badgeSz * 0.5,
+                          color: 'rgba(200,160,80,0.5)',
+                        }}
+                      >
+                        ?
+                      </span>
+                    );
+                  }
+                })()}
               </span>
 
               {/* Name label */}
@@ -384,15 +406,36 @@ export default function InteractiveMap({ groups, highlightGroupId }: Props) {
             </p>
 
             {/* Footer */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold"
-                style={{ background: 'rgba(146,173,164,0.22)', border: '1.5px solid #92ADA4', color: '#3d5a54' }}>
-                {selected.reward} Saria lortu duzu!
-              </div>
-              {char && (
-                <Image src={char.image} alt={char.name} width={44} height={44} className="object-contain" />
-              )}
-            </div>
+            {(() => {
+              const reward = focusGroup && selected.id > 0
+                ? getRewardForCheckpoint(selected.id, focusGroup.id)
+                : null;
+              const isUnlockedSel = unlocked.includes(selected.id);
+              return (
+                <div className="flex items-center gap-3">
+                  {reward && isUnlockedSel ? (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl flex-1"
+                      style={{ background: 'rgba(241,168,5,0.12)', border: '1px solid rgba(241,168,5,0.30)' }}>
+                      <img src={reward.image} alt={reward.name} draggable={false}
+                        style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                      <div>
+                        <p className="text-xs font-black" style={{ color: '#5a3218' }}>{reward.name}</p>
+                        <p className="text-xs opacity-60" style={{ color: '#84572F' }}>Tresna lortu duzu!</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl flex-1"
+                      style={{ background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(132,87,47,0.15)' }}>
+                      <span style={{ fontSize: 28, filter: 'grayscale(1)', opacity: 0.35 }}>❓</span>
+                      <p className="text-xs opacity-50" style={{ color: '#84572F' }}>Iristean lortuko duzu</p>
+                    </div>
+                  )}
+                  {char && (
+                    <Image src={char.image} alt={char.name} width={42} height={42} className="object-contain flex-shrink-0" />
+                  )}
+                </div>
+              );
+            })()}
 
             <button
               onClick={() => setSelected(null)}
