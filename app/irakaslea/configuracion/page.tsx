@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 const DEFAULT_CLASS_NAMES = [
   'Matematika',
@@ -23,6 +23,12 @@ export default function ConfiguracionPage() {
   const [loading,     setLoading]     = useState(true);
   const [saving,      setSaving]      = useState(false);
   const [saved,       setSaved]       = useState(false);
+
+  // Reset state
+  const [resetPhase,   setResetPhase]   = useState<'idle' | 'confirm' | 'doing' | 'done'>('idle');
+  const [resetConfirm, setResetConfirm] = useState('');
+  const [resetResult,  setResetResult]  = useState<{ deletedEntries: number; resetGroups: number } | null>(null);
+  const confirmInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
   const [name,        setName]        = useState('');
@@ -77,6 +83,25 @@ export default function ConfiguracionPage() {
 
   function resetClassNames() {
     setClassNames(DEFAULT_CLASS_NAMES);
+  }
+
+  async function doReset() {
+    if (resetConfirm.trim().toUpperCase() !== 'BERRABIARAZI') return;
+    setResetPhase('doing');
+    try {
+      const res = await fetch('/api/teacher/reset', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setResetResult(data);
+        setResetPhase('done');
+      } else {
+        setResetPhase('confirm');
+        alert('Errore bat gertatu da. Saiatu berriro.');
+      }
+    } catch {
+      setResetPhase('confirm');
+      alert('Konexio errorea.');
+    }
   }
 
   if (loading) {
@@ -215,6 +240,103 @@ export default function ConfiguracionPage() {
           )}
         </div>
       </form>
+
+      {/* ── DANGER ZONE: RESET ── */}
+      <div
+        className="rounded-2xl p-5 space-y-4"
+        style={{ background: 'rgba(180,40,20,0.07)', border: '1px solid rgba(180,40,20,0.25)' }}
+      >
+        <div>
+          <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: '#c0392b' }}>
+            Zona arriskutsua
+          </p>
+          <p className="text-sm font-bold" style={{ color: '#3d2510' }}>
+            Ikasturte berri baterako berrabiarazi
+          </p>
+          <p className="text-xs mt-1" style={{ color: '#84572F', opacity: 0.75 }}>
+            Honek honakoa ezabatuko du: erregistro guztiak, taldeen posizio guztiak (0ra itzuliko dira) eta ikasleen izenak. Taldeek berriro konfiguratu beharko dute sartu bezain laster. <strong>Ekintza hau ezin da desegin.</strong>
+          </p>
+        </div>
+
+        {resetPhase === 'idle' && (
+          <button
+            type="button"
+            onClick={() => { setResetPhase('confirm'); setResetConfirm(''); setTimeout(() => confirmInputRef.current?.focus(), 100); }}
+            className="py-2.5 px-5 rounded-xl text-sm font-black transition-opacity hover:opacity-90"
+            style={{ background: 'rgba(180,40,20,0.15)', border: '1px solid rgba(180,40,20,0.40)', color: '#c0392b' }}
+          >
+            🔄 Berrabiarazi ikasturte berri baterako
+          </button>
+        )}
+
+        {resetPhase === 'confirm' && (
+          <div className="space-y-3">
+            <p className="text-sm font-bold" style={{ color: '#c0392b' }}>
+              Ziur zaude? Idatzi <strong>BERRABIARAZI</strong> berresteko:
+            </p>
+            <input
+              ref={confirmInputRef}
+              type="text"
+              value={resetConfirm}
+              onChange={e => setResetConfirm(e.target.value)}
+              placeholder="BERRABIARAZI"
+              className="w-full rounded-xl px-4 py-2.5 text-sm font-black focus:outline-none tracking-widest uppercase"
+              style={{
+                background: 'rgba(255,255,255,0.65)',
+                border: '1.5px solid rgba(180,40,20,0.50)',
+                color: '#3d2510',
+              }}
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={doReset}
+                disabled={resetConfirm.trim().toUpperCase() !== 'BERRABIARAZI'}
+                className="py-2.5 px-5 rounded-xl text-sm font-black transition-all"
+                style={{
+                  background: resetConfirm.trim().toUpperCase() === 'BERRABIARAZI'
+                    ? 'rgba(180,40,20,0.85)'
+                    : 'rgba(180,40,20,0.20)',
+                  color: resetConfirm.trim().toUpperCase() === 'BERRABIARAZI' ? '#fff' : 'rgba(180,40,20,0.45)',
+                  cursor: resetConfirm.trim().toUpperCase() === 'BERRABIARAZI' ? 'pointer' : 'not-allowed',
+                  border: '1px solid rgba(180,40,20,0.40)',
+                }}
+              >
+                ⚠️ Bai, ezabatu dena
+              </button>
+              <button
+                type="button"
+                onClick={() => { setResetPhase('idle'); setResetConfirm(''); }}
+                className="py-2.5 px-5 rounded-xl text-sm font-semibold"
+                style={{ background: 'rgba(132,87,47,0.12)', border: '1px solid rgba(132,87,47,0.25)', color: '#84572F' }}
+              >
+                Utzi
+              </button>
+            </div>
+          </div>
+        )}
+
+        {resetPhase === 'doing' && (
+          <p className="text-sm font-bold animate-pulse" style={{ color: '#c0392b' }}>
+            Ezabatzen...
+          </p>
+        )}
+
+        {resetPhase === 'done' && resetResult && (
+          <div
+            className="rounded-xl px-4 py-3 flex items-start gap-3"
+            style={{ background: 'rgba(39,174,96,0.10)', border: '1px solid rgba(39,174,96,0.30)' }}
+          >
+            <span className="text-xl">✅</span>
+            <div>
+              <p className="text-sm font-black" style={{ color: '#27ae60' }}>Berrabiarazita!</p>
+              <p className="text-xs mt-0.5" style={{ color: '#4a7068' }}>
+                {resetResult.deletedEntries} erregistro ezabatu · {resetResult.resetGroups} taldeen posizioa 0ra berrezarri
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
