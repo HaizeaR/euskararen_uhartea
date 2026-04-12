@@ -45,7 +45,9 @@ export default function GruposPage() {
   const [loading,      setLoading]      = useState(true);
   const [creating,     setCreating]     = useState(false);
   const [editingChar,  setEditingChar]  = useState<Record<number, number>>({});
+  const [editingCode,  setEditingCode]  = useState<Record<number, string>>({});
   const [saving,       setSaving]       = useState<number | null>(null);
+  const [codeError,    setCodeError]    = useState<Record<number, string>>({});
   // Per-group new member input
   const [newMember,    setNewMember]    = useState<Record<number, string>>({});
   const [addingMember, setAddingMember] = useState<number | null>(null);
@@ -108,6 +110,30 @@ export default function GruposPage() {
       }
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function saveCode(groupId: number) {
+    const newCode = (editingCode[groupId] ?? '').trim().toUpperCase();
+    if (!newCode) return;
+    setSaving(groupId);
+    try {
+      const res = await fetch(`/api/groups/${groupId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: newCode }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setGroups(prev => prev.map(g => g.id === groupId ? updated : g));
+        setEditingCode(prev => { const n = { ...prev }; delete n[groupId]; return n; });
+        setCodeError(prev => { const n = { ...prev }; delete n[groupId]; return n; });
+      } else {
+        const { error } = await res.json();
+        setCodeError(prev => ({ ...prev, [groupId]: error ?? 'Errorea' }));
+      }
+    } finally {
+      setSaving(null);
     }
   }
 
@@ -235,9 +261,17 @@ export default function GruposPage() {
                   <span className="font-bold" style={{ color: char.color }}>
                     {g.name}
                   </span>
-                  <span className="text-amber-800 font-mono text-xs border border-amber-900 rounded px-1.5 py-0.5">
-                    {g.code ?? '—'}
-                  </span>
+                  <div className="flex flex-col items-end gap-0.5">
+                    <input
+                      value={editingCode[g.id] ?? g.code ?? ''}
+                      onChange={e => setEditingCode(prev => ({ ...prev, [g.id]: e.target.value.toUpperCase().slice(0,8) }))}
+                      onBlur={() => { if (editingCode[g.id] !== undefined && editingCode[g.id] !== g.code) saveCode(g.id); }}
+                      onKeyDown={e => { if (e.key === 'Enter') saveCode(g.id); }}
+                      className="font-mono text-xs border rounded px-1.5 py-0.5 w-20 text-center focus:outline-none"
+                      style={{ background: 'rgba(0,0,0,0.3)', borderColor: codeError[g.id] ? '#e05040' : 'rgba(161,107,30,0.5)', color: '#f5cc80' }}
+                    />
+                    {codeError[g.id] && <span className="text-xs" style={{ color: '#e05040' }}>{codeError[g.id]}</span>}
+                  </div>
                 </div>
                 {todayEntry ? (
                   <div className="flex items-center gap-3 flex-wrap">

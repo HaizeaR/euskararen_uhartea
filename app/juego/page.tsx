@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CHARACTERS, CHARACTER_NAMES } from '@/lib/characters';
 import { CHECKPOINTS } from '@/lib/checkpoints';
+import { getGroupRewards } from '@/lib/rewards';
 
 type Group = {
   id: number;
@@ -15,7 +16,8 @@ type Group = {
   color: string;
   position: string;
   classroom_id: number;
-  pending_message: string | null;
+  pending_message:      string | null;
+  initial_reward_shown: boolean;
 };
 
 type DayEntry = {
@@ -84,6 +86,52 @@ function TeacherMessage({ message, charColor, onDismiss }: {
   );
 }
 
+/* ── Welcome / initial reward modal ─────────────────────────── */
+function WelcomeReward({ group, onDismiss }: {
+  group: Group;
+  onDismiss: () => void;
+}) {
+  const char   = CHARACTERS[group.character_index] ?? CHARACTERS[0];
+  const reward = getGroupRewards(group.id)[0];
+  const cp     = CHECKPOINTS[0];
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6"
+      style={{ background: 'rgba(8,4,1,0.88)', backdropFilter: 'blur(12px)' }}>
+      <div className="relative rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl anim-pop"
+        style={{
+          background: 'linear-gradient(160deg,#1e1208,#0d0702)',
+          border: `1.5px solid ${char.color}44`,
+          boxShadow: `0 8px 60px ${char.color}22`,
+        }}>
+        <div className="text-5xl mb-3">{cp.icon}</div>
+        <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: char.color }}>
+          Ongi etorri!
+        </p>
+        <h2 className="font-black text-xl mb-2" style={{ color: '#fff', fontFamily: 'Rubik, sans-serif' }}>
+          {cp.name}
+        </h2>
+        <p className="text-sm mb-5" style={{ color: 'rgba(255,255,255,0.60)' }}>{cp.description}</p>
+        {reward && (
+          <div className="flex flex-col items-center gap-2 p-4 rounded-2xl mb-5"
+            style={{ background: `${char.color}15`, border: `1px solid ${char.color}30` }}>
+            <div className="relative" style={{ width: 100, height: 100 }}>
+              <Image src={reward.image} alt={reward.name} fill className="object-contain animate-bounce"
+                style={{ filter: `drop-shadow(0 4px 12px ${char.color}66)` }} />
+            </div>
+            <p className="font-black text-base" style={{ color: '#fff' }}>{reward.name}</p>
+            <p className="text-xs font-semibold" style={{ color: char.color }}>Lehen tresna lortu duzu!</p>
+          </div>
+        )}
+        <button onClick={onDismiss}
+          className="w-full py-3 rounded-2xl font-black text-base text-white transition-all hover:opacity-90"
+          style={{ background: `linear-gradient(135deg, ${char.color}cc, ${char.color}88)` }}>
+          Aurrera! →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function JuegoPage() {
   const router = useRouter();
   const [group,          setGroup]          = useState<Group | null>(null);
@@ -93,6 +141,7 @@ export default function JuegoPage() {
   const [loading,        setLoading]        = useState(true);
   const [ready,          setReady]          = useState(false);
   const [teacherMsg,     setTeacherMsg]     = useState<string | null>(null);
+  const [showWelcome,    setShowWelcome]    = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -111,6 +160,7 @@ export default function JuegoPage() {
         if (!myGroup || !myGroup.student_name) { router.push('/juego/setup'); return; }
         setGroup(myGroup);
         if (myGroup.pending_message) setTeacherMsg(myGroup.pending_message);
+        if (!myGroup.initial_reward_shown) setShowWelcome(true);
 
         if (classroomRes.ok) {
           const { classroom: c } = await classroomRes.json();
@@ -131,6 +181,17 @@ export default function JuegoPage() {
     }
     load();
   }, [router]);
+
+  async function dismissWelcome() {
+    setShowWelcome(false);
+    if (group) {
+      await fetch(`/api/groups/${group.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initial_reward_shown: true }),
+      });
+    }
+  }
 
   async function dismissMessage() {
     await fetch('/api/groups/message', { method: 'PATCH' });
@@ -180,6 +241,11 @@ export default function JuegoPage() {
 
   return (
     <>
+      {/* Initial reward / welcome modal */}
+      {showWelcome && !teacherMsg && (
+        <WelcomeReward group={group} onDismiss={dismissWelcome} />
+      )}
+
       {/* Teacher message modal */}
       {teacherMsg && (
         <TeacherMessage

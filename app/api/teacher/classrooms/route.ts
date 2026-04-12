@@ -52,6 +52,9 @@ export async function PATCH(req: NextRequest) {
     if (Array.isArray(body.class_names) && body.class_names.length === 5) {
       updates.class_names = JSON.stringify(body.class_names.map((n: unknown) => String(n).trim()));
     }
+    if (Array.isArray(body.weekly_schedule) && body.weekly_schedule.length === 5) {
+      updates.weekly_schedule = JSON.stringify(body.weekly_schedule);
+    }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: 'Daturik ez dago eguneratzeko' }, { status: 400 });

@@ -26,7 +26,8 @@ export const classrooms = pgTable('classrooms', {
   code: varchar('code', { length: 6 }).notNull().unique(),
   teacher_id: integer('teacher_id').notNull().references(() => users.id),
   map_total: integer('map_total').default(50).notNull(),
-  class_names: varchar('class_names', { length: 500 }),   // JSON array of 5 strings
+  class_names:     varchar('class_names',     { length: 500 }),   // JSON array of 5 strings
+  weekly_schedule: varchar('weekly_schedule', { length: 500 }),   // JSON boolean[5][5]: days×subjects
   is_active: boolean('is_active').default(true).notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
 });
@@ -40,7 +41,8 @@ export const groups = pgTable('groups', {
   character_index: integer('character_index').notNull().default(0),
   position: numeric('position', { precision: 5, scale: 1 }).notNull().default('0'),
   color: varchar('color', { length: 7 }).notNull().default('#20b090'),
-  pending_message: varchar('pending_message', { length: 500 }),
+  pending_message:     varchar('pending_message', { length: 500 }),
+  initial_reward_shown: boolean('initial_reward_shown').default(false).notNull(),
   created_at: timestamp('created_at').defaultNow().notNull(),
 });
 

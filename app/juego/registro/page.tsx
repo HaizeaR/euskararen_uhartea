@@ -227,8 +227,9 @@ export default function RegistroPage() {
   const [charIdx,     setCharIdx]     = useState(0);
   const [currentPos,  setCurrentPos]  = useState(0);
   const [classNames,  setClassNames]  = useState<string[]>(DEFAULT_CLASS_NAMES);
-  const [groupId,     setGroupId]     = useState<number | null>(null);
-  const [loading,     setLoading]     = useState(false);
+  const [groupId,       setGroupId]       = useState<number | null>(null);
+  const [todayIndices,  setTodayIndices]  = useState<number[]>([0,1,2,3,4]); // which subjects are shown today
+  const [loading,       setLoading]       = useState(false);
   const [error,       setError]       = useState('');
   const [celebration,  setCelebration]  = useState<{ checkpoint: Checkpoint; reward: Reward | null } | null>(null);
   const [perfectScore, setPerfectScore] = useState<{ advance: number } | null>(null);
@@ -248,6 +249,19 @@ export default function RegistroPage() {
           }
           if (classroomData?.classroom?.class_names) {
             try { setClassNames(JSON.parse(classroomData.classroom.class_names)); } catch {}
+          }
+          if (classroomData?.classroom?.weekly_schedule) {
+            try {
+              const schedule: boolean[][] = JSON.parse(classroomData.classroom.weekly_schedule);
+              const dow = new Date().getDay(); // 0=Sun,1=Mon…6=Sat
+              if (dow >= 1 && dow <= 5) {
+                const todayRow = schedule[dow - 1]; // 0=Mon…4=Fri
+                if (Array.isArray(todayRow)) {
+                  const indices = todayRow.map((on, i) => on ? i : -1).filter(i => i >= 0);
+                  if (indices.length > 0) setTodayIndices(indices);
+                }
+              }
+            } catch {}
           }
         });
       }
@@ -387,7 +401,7 @@ export default function RegistroPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-2.5">
-          {classNames.map((name, i) => (
+          {classNames.map((name, i) => todayIndices.includes(i) ? (
             <div key={i} className="card-dark px-4 py-3 rounded-2xl">
               <p className="text-xs font-bold uppercase tracking-widest mb-2.5" style={{ color: '#92ADA4' }}>
                 {i + 1}. {name}
@@ -419,12 +433,12 @@ export default function RegistroPage() {
                   }}
                 >
                   <span className="text-base">🤝</span>
-                  <span className="text-xs font-semibold leading-tight flex-1">Errespetatua naiz</span>
+                  <span className="text-xs font-semibold leading-tight flex-1">Errespetuz jokatu dugu!</span>
                   {classes[i].errespetua && <span style={{ color: '#f5cc50', fontSize: 11 }}>✓</span>}
                 </button>
               </div>
             </div>
-          ))}
+          ) : null)}
 
           {error && (
             <p className="text-sm text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(180,40,20,0.12)', color: '#e05040', border: '1px solid rgba(180,40,20,0.20)' }}>

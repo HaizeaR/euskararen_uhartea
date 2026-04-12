@@ -23,6 +23,11 @@ type DayEntry = {
   score: number;
   advance: string;
   validated_by_teacher: boolean;
+  class_1_euskera: boolean; class_1_errespetua: boolean;
+  class_2_euskera: boolean; class_2_errespetua: boolean;
+  class_3_euskera: boolean; class_3_errespetua: boolean;
+  class_4_euskera: boolean; class_4_errespetua: boolean;
+  class_5_euskera: boolean; class_5_errespetua: boolean;
 };
 
 function scoreColor(s: number) {
@@ -49,11 +54,17 @@ function calcStreak(entries: DayEntry[]): number {
   return streak;
 }
 
+type EditState = { [key: string]: boolean };
+
 export default function PerfilPage() {
   const router = useRouter();
-  const [group,   setGroup]   = useState<Group | null>(null);
-  const [entries, setEntries] = useState<DayEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [group,      setGroup]      = useState<Group | null>(null);
+  const [entries,    setEntries]    = useState<DayEntry[]>([]);
+  const [loading,    setLoading]    = useState(true);
+  const [editId,     setEditId]     = useState<number | null>(null);
+  const [editState,  setEditState]  = useState<EditState>({});
+  const [editSaving, setEditSaving] = useState(false);
+  const [classNames, setClassNames] = useState<string[]>(['Matematika','Hizkuntza','Nat. Zientziak','Giz. Zientziak','Gorputz Hez.']);
 
   useEffect(() => {
     async function load() {
@@ -62,17 +73,20 @@ export default function PerfilPage() {
         if (!res.ok) { router.push('/'); return; }
         const session = await res.json();
 
-        const [gr, er] = await Promise.all([
+        const [gr, er, cr] = await Promise.all([
           fetch(`/api/groups?classroom_id=${session.classroomId}`),
           fetch(`/api/entries?group_id=${session.groupId}`),
+          fetch('/api/teacher/classrooms'),
         ]);
         const groups: Group[] = await gr.json();
-        const g = groups.find(x => x.id === session.groupId) ?? null;
-        setGroup(g);
-
+        setGroup(groups.find(x => x.id === session.groupId) ?? null);
         if (er.ok) {
           const data: DayEntry[] = await er.json();
           setEntries([...data].sort((a, b) => b.entry_date.localeCompare(a.entry_date)));
+        }
+        if (cr.ok) {
+          const { classroom: c } = await cr.json();
+          if (c?.class_names) try { setClassNames(JSON.parse(c.class_names)); } catch {}
         }
       } catch (err) {
         console.error(err);
@@ -82,6 +96,38 @@ export default function PerfilPage() {
     }
     load();
   }, [router]);
+
+  function openEdit(e: DayEntry) {
+    const s: EditState = {};
+    for (let k = 1; k <= 5; k++) {
+      s[`class_${k}_euskera`]    = (e as unknown as Record<string,boolean>)[`class_${k}_euskera`];
+      s[`class_${k}_errespetua`] = (e as unknown as Record<string,boolean>)[`class_${k}_errespetua`];
+    }
+    setEditState(s);
+    setEditId(e.id);
+  }
+
+  function toggleEdit(field: string) {
+    setEditState(prev => ({ ...prev, [field]: !prev[field] }));
+  }
+
+  async function saveEdit(entryId: number) {
+    setEditSaving(true);
+    try {
+      const res = await fetch(`/api/entries/${entryId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editState),
+      });
+      if (res.ok) {
+        const updated: DayEntry = await res.json();
+        setEntries(prev => prev.map(e => e.id === entryId ? { ...e, ...updated } : e));
+        setEditId(null);
+      }
+    } finally {
+      setEditSaving(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -267,25 +313,76 @@ export default function PerfilPage() {
           <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: '#92ADA4' }}>
             Historikoa
           </p>
-          <div className="space-y-1.5 max-h-52 overflow-y-auto">
+          <div className="space-y-1.5 max-h-96 overflow-y-auto">
             {entries.map(e => (
-              <div key={e.id} className="flex items-center gap-3 text-sm px-3 py-2 rounded-xl"
-                style={{ background: 'rgba(0,0,0,0.04)' }}>
-                <span className="text-xs font-semibold w-20 shrink-0" style={{ color: '#84572F' }}>
-                  {e.entry_date}
-                </span>
-                <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(132,87,47,0.12)' }}>
-                  <div className="h-1.5 rounded-full transition-all"
-                    style={{ width: `${(e.score / 10) * 100}%`, background: scoreColor(e.score) }} />
+              <div key={e.id}>
+                {/* Row */}
+                <div className="flex items-center gap-3 text-sm px-3 py-2 rounded-xl"
+                  style={{ background: 'rgba(0,0,0,0.04)' }}>
+                  <span className="text-xs font-semibold w-20 shrink-0" style={{ color: '#84572F' }}>
+                    {e.entry_date}
+                  </span>
+                  <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(132,87,47,0.12)' }}>
+                    <div className="h-1.5 rounded-full transition-all"
+                      style={{ width: `${(e.score / 10) * 100}%`, background: scoreColor(e.score) }} />
+                  </div>
+                  <span className="font-black text-sm w-10 text-right" style={{ color: scoreColor(e.score) }}>
+                    {e.score}/10
+                  </span>
+                  <span className="text-xs w-12 text-right font-semibold" style={{ color: '#4a7068' }}>
+                    +{e.advance}
+                  </span>
+                  {e.validated_by_teacher
+                    ? <span className="text-xs font-bold w-14 text-right" style={{ color: '#27ae60' }}>✓ Bal.</span>
+                    : (
+                      <button
+                        onClick={() => editId === e.id ? setEditId(null) : openEdit(e)}
+                        className="text-xs font-bold w-14 text-right transition-opacity hover:opacity-100 opacity-60"
+                        style={{ color: '#84572F' }}
+                      >
+                        {editId === e.id ? 'Itxi ✕' : 'Editatu'}
+                      </button>
+                    )
+                  }
                 </div>
-                <span className="font-black text-sm w-10 text-right" style={{ color: scoreColor(e.score) }}>
-                  {e.score}/10
-                </span>
-                <span className="text-xs w-12 text-right font-semibold" style={{ color: '#4a7068' }}>
-                  +{e.advance}
-                </span>
-                {e.validated_by_teacher && (
-                  <span className="text-xs font-bold" style={{ color: '#27ae60' }}>✓</span>
+
+                {/* Inline edit panel */}
+                {editId === e.id && (
+                  <div className="mt-1 mb-2 px-3 py-3 rounded-xl space-y-2"
+                    style={{ background: 'rgba(132,87,47,0.07)', border: '1px solid rgba(132,87,47,0.18)' }}>
+                    {classNames.map((name, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <span className="text-xs font-semibold w-24 shrink-0" style={{ color: '#84572F' }}>
+                          {name}
+                        </span>
+                        <button
+                          onClick={() => toggleEdit(`class_${i+1}_euskera`)}
+                          className="text-xs px-2 py-1 rounded-lg transition-all"
+                          style={{
+                            background: editState[`class_${i+1}_euskera`] ? 'rgba(100,185,140,0.18)' : 'rgba(0,0,0,0.06)',
+                            border: `1px solid ${editState[`class_${i+1}_euskera`] ? 'rgba(100,185,140,0.50)' : 'rgba(132,87,47,0.20)'}`,
+                            color: editState[`class_${i+1}_euskera`] ? '#27ae60' : '#84572F',
+                          }}
+                        >🗣️ Euskera</button>
+                        <button
+                          onClick={() => toggleEdit(`class_${i+1}_errespetua`)}
+                          className="text-xs px-2 py-1 rounded-lg transition-all"
+                          style={{
+                            background: editState[`class_${i+1}_errespetua`] ? 'rgba(241,168,5,0.12)' : 'rgba(0,0,0,0.06)',
+                            border: `1px solid ${editState[`class_${i+1}_errespetua`] ? 'rgba(241,168,5,0.45)' : 'rgba(132,87,47,0.20)'}`,
+                            color: editState[`class_${i+1}_errespetua`] ? '#c98000' : '#84572F',
+                          }}
+                        >🤝 Errespetua</button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => saveEdit(e.id)}
+                      disabled={editSaving}
+                      className="btn-teal text-xs py-1.5 px-4 mt-1"
+                    >
+                      {editSaving ? 'Gordetzen...' : '💾 Gorde'}
+                    </button>
+                  </div>
                 )}
               </div>
             ))}
