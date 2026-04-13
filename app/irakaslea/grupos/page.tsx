@@ -48,6 +48,7 @@ export default function GruposPage() {
   const [editingCode,  setEditingCode]  = useState<Record<number, string>>({});
   const [saving,       setSaving]       = useState<number | null>(null);
   const [codeError,    setCodeError]    = useState<Record<number, string>>({});
+  const [editingStudentName, setEditingStudentName] = useState<Record<number, string>>({});
   // Per-group new member input
   const [newMember,    setNewMember]    = useState<Record<number, string>>({});
   const [addingMember, setAddingMember] = useState<number | null>(null);
@@ -110,6 +111,25 @@ export default function GruposPage() {
       }
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function saveStudentName(groupId: number) {
+    const newName = (editingStudentName[groupId] ?? '').trim();
+    setSaving(groupId);
+    try {
+      const res = await fetch(`/api/groups/${groupId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_name: newName || null }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setGroups(prev => prev.map(g => g.id === groupId ? updated : g));
+        setEditingStudentName(prev => { const n = { ...prev }; delete n[groupId]; return n; });
+      }
+    } finally {
+      setSaving(null);
     }
   }
 
@@ -258,9 +278,14 @@ export default function GruposPage() {
               >
                 <div className="flex items-center gap-2">
                   <Image src={char.image} alt={char.name} width={24} height={24} className="object-contain" />
-                  <span className="font-bold text-sm" style={{ color: char.color }}>
-                    {g.student_name ?? g.name}
-                  </span>
+                  <input
+                    value={editingStudentName[g.id] ?? g.student_name ?? g.name ?? ''}
+                    onChange={e => setEditingStudentName(prev => ({ ...prev, [g.id]: e.target.value }))}
+                    onBlur={() => { if (editingStudentName[g.id] !== undefined && editingStudentName[g.id] !== g.student_name) saveStudentName(g.id); }}
+                    onKeyDown={e => { if (e.key === 'Enter') saveStudentName(g.id); }}
+                    className="font-bold text-sm border rounded px-1.5 py-0.5 w-36 focus:outline-none"
+                    style={{ background: 'rgba(0,0,0,0.3)', borderColor: 'rgba(161,107,30,0.5)', color: char.color }}
+                  />
                   <div className="flex flex-col items-end gap-0.5">
                     <input
                       value={editingCode[g.id] ?? g.code ?? ''}
