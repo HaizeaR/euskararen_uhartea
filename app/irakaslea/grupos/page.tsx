@@ -48,7 +48,6 @@ export default function GruposPage() {
   const [editingCode,  setEditingCode]  = useState<Record<number, string>>({});
   const [saving,       setSaving]       = useState<number | null>(null);
   const [codeError,    setCodeError]    = useState<Record<number, string>>({});
-  const [editingName,  setEditingName]  = useState<Record<number, string>>({});
   // Per-group new member input
   const [newMember,    setNewMember]    = useState<Record<number, string>>({});
   const [addingMember, setAddingMember] = useState<number | null>(null);
@@ -111,26 +110,6 @@ export default function GruposPage() {
       }
     } finally {
       setCreating(false);
-    }
-  }
-
-  async function saveName(groupId: number) {
-    const newName = (editingName[groupId] ?? '').trim();
-    if (!newName) return;
-    setSaving(groupId);
-    try {
-      const res = await fetch(`/api/groups/${groupId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName }),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setGroups(prev => prev.map(g => g.id === groupId ? updated : g));
-        setEditingName(prev => { const n = { ...prev }; delete n[groupId]; return n; });
-      }
-    } finally {
-      setSaving(null);
     }
   }
 
@@ -279,21 +258,9 @@ export default function GruposPage() {
               >
                 <div className="flex items-center gap-2">
                   <Image src={char.image} alt={char.name} width={24} height={24} className="object-contain" />
-                  <div className="flex flex-col gap-0.5">
-                    <input
-                      value={editingName[g.id] ?? g.name ?? ''}
-                      onChange={e => setEditingName(prev => ({ ...prev, [g.id]: e.target.value }))}
-                      onBlur={() => { if (editingName[g.id] !== undefined && editingName[g.id] !== g.name) saveName(g.id); }}
-                      onKeyDown={e => { if (e.key === 'Enter') saveName(g.id); }}
-                      className="font-bold text-sm border rounded px-1.5 py-0.5 w-32 focus:outline-none"
-                      style={{ background: 'rgba(0,0,0,0.3)', borderColor: 'rgba(161,107,30,0.5)', color: char.color }}
-                    />
-                    {g.student_name && (
-                      <span className="text-xs italic" style={{ color: 'rgba(240,210,120,0.6)' }}>
-                        &quot;{g.student_name}&quot;
-                      </span>
-                    )}
-                  </div>
+                  <span className="font-bold text-sm" style={{ color: char.color }}>
+                    {g.student_name ?? g.name}
+                  </span>
                   <div className="flex flex-col items-end gap-0.5">
                     <input
                       value={editingCode[g.id] ?? g.code ?? ''}
