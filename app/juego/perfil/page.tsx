@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { CHARACTERS } from '@/lib/characters';
 import { CHECKPOINTS, unlockedCheckpoints } from '@/lib/checkpoints';
 import { getGroupRewards } from '@/lib/rewards';
-import { WEEKLY_SCHEDULE } from '@/lib/schedule';
+import { parseSchedule } from '@/lib/schedule';
 
 type Group = {
   id: number;
@@ -74,6 +74,7 @@ export default function PerfilPage() {
   const [editState,  setEditState]  = useState<EditState>({});
   const [editSaving, setEditSaving] = useState(false);
   const [classNames, setClassNames] = useState<string[]>(['Matematika','Hizkuntza','Nat. Zientziak','Giz. Zientziak','Gorputz Hez.']);
+  const [classroomSchedule, setClassroomSchedule] = useState<Record<number, string[]>>({});
 
   useEffect(() => {
     async function load() {
@@ -85,7 +86,7 @@ export default function PerfilPage() {
         const [gr, er, cr] = await Promise.all([
           fetch(`/api/groups?classroom_id=${session.classroomId}`),
           fetch(`/api/entries?group_id=${session.groupId}`),
-          fetch('/api/teacher/classrooms'),
+          fetch('/api/classroom'),
         ]);
         const groups: Group[] = await gr.json();
         setGroup(groups.find(x => x.id === session.groupId) ?? null);
@@ -96,6 +97,7 @@ export default function PerfilPage() {
         if (cr.ok) {
           const { classroom: c } = await cr.json();
           if (c?.class_names) try { setClassNames(JSON.parse(c.class_names)); } catch {}
+          setClassroomSchedule(parseSchedule(c?.weekly_schedule));
         }
       } catch (err) {
         console.error(err);
@@ -368,7 +370,7 @@ export default function PerfilPage() {
                 {editId === e.id && (
                   <div className="mt-1 mb-2 px-3 py-3 rounded-xl space-y-2"
                     style={{ background: 'rgba(132,87,47,0.07)', border: '1px solid rgba(132,87,47,0.18)' }}>
-                    {(WEEKLY_SCHEDULE[new Date(e.entry_date + 'T12:00:00').getDay()] ?? classNames).map((name, i) => (
+                    {(classroomSchedule[new Date(e.entry_date + 'T12:00:00').getDay()] ?? classNames).map((name: string, i: number) => (
                       <div key={i} className="flex items-center gap-2">
                         <span className="text-xs font-semibold w-24 shrink-0" style={{ color: '#84572F' }}>
                           {name}

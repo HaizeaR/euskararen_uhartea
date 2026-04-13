@@ -7,10 +7,7 @@ import Image from 'next/image';
 import { CHARACTERS, CHARACTER_NAMES } from '@/lib/characters';
 import { CHECKPOINTS } from '@/lib/checkpoints';
 import { getGroupRewards } from '@/lib/rewards';
-import { WEEKLY_SCHEDULE } from '@/lib/schedule';
-
-const todayDow = new Date().getDay();
-const TODAY_SUBJECTS: string[] = WEEKLY_SCHEDULE[todayDow] ?? [];
+import { parseSchedule } from '@/lib/schedule';
 
 type Group = {
   id: number;
@@ -146,6 +143,7 @@ export default function JuegoPage() {
   const [todayEntry,     setTodayEntry]     = useState<DayEntry | null>(null);
   const [mapTotal,       setMapTotal]       = useState(50);
   const [members,        setMembers]        = useState<string[]>([]);
+  const [todaySubjects,  setTodaySubjects]  = useState<string[]>([]);
   const [loading,        setLoading]        = useState(true);
   const [ready,          setReady]          = useState(false);
   const [teacherMsg,     setTeacherMsg]     = useState<string | null>(null);
@@ -160,7 +158,7 @@ export default function JuegoPage() {
 
         const [groupsRes, classroomRes] = await Promise.all([
           fetch(`/api/groups?classroom_id=${session.classroomId}`),
-          fetch('/api/teacher/classrooms'),
+          fetch('/api/classroom'),
         ]);
         const groups = await groupsRes.json();
         const myGroup: Group | undefined = groups.find((g: Group) => g.id === session.groupId);
@@ -173,6 +171,9 @@ export default function JuegoPage() {
         if (classroomRes.ok) {
           const { classroom: c } = await classroomRes.json();
           if (c?.map_total) setMapTotal(c.map_total);
+          const schedule = parseSchedule(c?.weekly_schedule);
+          const dow = new Date().getDay();
+          setTodaySubjects(schedule[dow] ?? []);
         }
 
         const [entriesRes, membersRes] = await Promise.all([
@@ -465,7 +466,7 @@ export default function JuegoPage() {
             )}
 
             {/* Today's subjects */}
-            {TODAY_SUBJECTS.length > 0 && (
+            {todaySubjects.length > 0 && (
               <div
                 className="flex items-center gap-2 flex-wrap px-4 py-2.5 rounded-2xl"
                 style={{ background: cardBg, border: `1px solid ${cardBorder}` }}
@@ -473,7 +474,7 @@ export default function JuegoPage() {
                 <span className="text-xs font-black uppercase tracking-widest shrink-0" style={{ color: c1(0.65) }}>
                   📅 Gaur:
                 </span>
-                {TODAY_SUBJECTS.map((s, i) => (
+                {todaySubjects.map((s: string, i: number) => (
                   <span
                     key={i}
                     className="text-xs font-bold px-2.5 py-1 rounded-lg"

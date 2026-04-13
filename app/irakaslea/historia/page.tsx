@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { CHARACTERS } from '@/lib/characters';
-import { WEEKLY_SCHEDULE } from '@/lib/schedule';
+import { parseSchedule } from '@/lib/schedule';
 
 type Entry = {
   id: number;
@@ -36,6 +36,7 @@ export default function HistoriaPage() {
   const [groups,    setGroups]    = useState<Group[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [classroomSchedule, setClassroomSchedule] = useState<Record<number, string[]>>({});
 
   // Edit state
   const [editId,     setEditId]     = useState<number | null>(null);
@@ -68,6 +69,7 @@ export default function HistoriaPage() {
       const { classroom } = await cr.json();
       const gr = await fetch(`/api/groups?classroom_id=${classroom.id}`);
       if (gr.ok) setGroups(await gr.json());
+      setClassroomSchedule(parseSchedule(classroom?.weekly_schedule));
     }
     loadGroups();
   }, []);
@@ -251,7 +253,7 @@ export default function HistoriaPage() {
             {entries.map(entry => {
               const char = CHARACTERS[entry.character_index] ?? CHARACTERS[0];
               const entryDow = new Date(entry.entry_date + 'T12:00:00').getDay();
-              const daySubjects = WEEKLY_SCHEDULE[entryDow] ?? ['Ikasgaia 1','Ikasgaia 2','Ikasgaia 3','Ikasgaia 4','Ikasgaia 5'];
+              const daySubjects = classroomSchedule[entryDow] ?? ['Ikasgaia 1','Ikasgaia 2','Ikasgaia 3','Ikasgaia 4','Ikasgaia 5'];
               const isEditing = editId === entry.id;
 
               return (
