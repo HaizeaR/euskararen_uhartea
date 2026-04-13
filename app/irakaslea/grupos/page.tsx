@@ -290,7 +290,7 @@ export default function GruposPage() {
                     />
                     {g.student_name && (
                       <span className="text-xs italic" style={{ color: 'rgba(240,210,120,0.6)' }}>
-                        "{g.student_name}"
+                        &quot;{g.student_name}&quot;
                       </span>
                     )}
                   </div>
